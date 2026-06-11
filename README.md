@@ -1,6 +1,5 @@
 # 🩸 LifeLink AI
-![Django Tests](https://github.com/fathima-rinsha-k745
-Public/LifeLink-AI/actions/workflows/django.yml/badge.svg)
+![Django Tests]([![Django Tests](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml/badge.svg)](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml))
 
 ## Problem
 
