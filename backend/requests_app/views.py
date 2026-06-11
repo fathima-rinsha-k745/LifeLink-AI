@@ -14,3 +14,4 @@ class BloodRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['blood_group', 'city']
+
