@@ -1,4 +1,6 @@
 # 🩸 LifeLink AI
+![Django Tests](https://github.com/fathima-rinsha-k745
+Public/LifeLink-AI/actions/workflows/django.yml/badge.svg)
 
 ## Problem
 
