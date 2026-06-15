@@ -23,11 +23,15 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
     path('api/', include('users.urls')),
     path('api/', include('donors.urls')),
 
     path('api/token/', TokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),
-    path('api/', include('requests_app.urls')),
+
+    # Put AI routes BEFORE requests_app
     path("api/", include("ai_intake.urls")),
+
+    path('api/', include('requests_app.urls')),
 ]

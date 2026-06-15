@@ -43,12 +43,14 @@ class EmergencyAIIntakeView(APIView):
 
         # Step 1: Call AI service
         ai_result = parse_emergency_text(raw_text)
-
         if ai_result is None:
-            return Response(
-                {"error": "AI parsing failed. Please fill the form manually."},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE
-            )
+         return Response(
+        {
+            "error": "AI parsing failed. Please fill the form manually.",
+            "fallback": True
+        },
+        status=status.HTTP_503_SERVICE_UNAVAILABLE
+    )
 
         # Step 2: Validate extracted data
         serializer = AIIntakeSerializer(data=ai_result)
