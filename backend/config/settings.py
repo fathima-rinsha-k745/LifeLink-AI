@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'requests_app',
     'rest_framework',
     'django_filters',
+    'ai_intake',
 ]
 
 MIDDLEWARE = [
