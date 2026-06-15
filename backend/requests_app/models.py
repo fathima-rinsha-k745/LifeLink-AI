@@ -11,7 +11,11 @@ class BloodRequest(models.Model):
     ]
 
     patient_name = models.CharField(max_length=100)
-    blood_group = models.CharField(max_length=3)
+    blood_group = models.CharField(
+    max_length=3,
+    null=True,
+    blank=True
+)
     hospital = models.CharField(max_length=150)
     city = models.CharField(max_length=100)
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
