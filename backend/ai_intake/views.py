@@ -1,7 +1,5 @@
 # ai_intake/views.py
 
-import json
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,66 +10,76 @@ from .services import parse_emergency_text, find_matched_donors
 from .models import AIIntakeLog
 
 
-SYSTEM_PROMPT = """
-You are a medical emergency intake parser for LifeLink AI...
-[paste your full system prompt here]
-"""
-
-
 class EmergencyAIIntakeView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
         raw_text = request.data.get("description", "").strip()
 
+        # Empty description
         if not raw_text:
             return Response(
                 {"error": "description field is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if len(raw_text) < 20:
-         return Response(
-        {"error": "Description too short"},
-        status=status.HTTP_400_BAD_REQUEST
-    )
 
+        # Too short
+        if len(raw_text) < 20:
+            return Response(
+                {"error": "Description too short"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Too long
         if len(raw_text) > 1000:
             return Response(
                 {"error": "Description too long. Max 1000 characters."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Step 1: Call AI service
+        # Parse using AI
         ai_result = parse_emergency_text(raw_text)
-        if ai_result is None:
-         return Response(
-        {
-            "error": "AI parsing failed. Please fill the form manually.",
-            "fallback": True
-        },
-        status=status.HTTP_503_SERVICE_UNAVAILABLE
-    )
 
-        # Step 2: Validate extracted data
+        if ai_result is None:
+            return Response(
+                {
+                    "error": "AI parsing failed. Please fill the form manually.",
+                    "fallback": True
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+        # Convert AI urgency → model urgency
+        urgency_map = {
+            "critical": "Critical",
+            "urgent": "High",
+            "moderate": "Medium",
+            "low": "Low",
+        }
+
+        if ai_result.get("urgency"):
+            ai_result["urgency"] = urgency_map.get(
+                ai_result["urgency"].lower(),
+                "Medium"
+            )
+
+        # Validate data
         serializer = AIIntakeSerializer(data=ai_result)
+
         if not serializer.is_valid():
             return Response(
                 {
                     "error": "AI extracted invalid data",
                     "ai_output": ai_result,
-                    "validation_errors": serializer.errors
+                    "validation_errors": serializer.errors,
                 },
-                status=status.HTTP_422_UNPROCESSABLE_ENTITY
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
-        # Step 3: Save to Supabase (via Django ORM → PostgreSQL)
-        blood_request = serializer.save(
-            created_by=request.user,
-            source="ai_intake",
-            raw_input=raw_text
-        )
+        # Save BloodRequest
+        blood_request = serializer.save()
 
-        # Step 4: Log the AI call for audit
+        # Log AI interaction
         AIIntakeLog.objects.create(
             user=request.user,
             raw_input=raw_text,
@@ -80,7 +88,7 @@ class EmergencyAIIntakeView(APIView):
             blood_request=blood_request
         )
 
-        # Step 5: Find matched donors immediately
+        # Find donors
         matched_donors = find_matched_donors(blood_request)
 
         return Response(
@@ -89,8 +97,8 @@ class EmergencyAIIntakeView(APIView):
                 "message": "Emergency intake processed successfully",
                 "blood_request": serializer.data,
                 "matched_donors": matched_donors,
-                "ai_confidence": ai_result.get("confidence_score"),
-                "donors_found": len(matched_donors)
+                "donors_found": len(matched_donors),
+                "ai_confidence": ai_result.get("confidence_score", 0)
             },
             status=status.HTTP_201_CREATED
         )

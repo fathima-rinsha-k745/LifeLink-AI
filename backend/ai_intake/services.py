@@ -47,8 +47,7 @@ def parse_emergency_text(raw_text: str) -> dict | None:
             raw_output = raw_output.replace("```", "")
             raw_output = raw_output.strip()
 
-        parsed = json.loads(raw_output)
-        return parsed
+        return json.loads(raw_output)
 
     except json.JSONDecodeError:
         return None
@@ -66,6 +65,9 @@ def find_matched_donors(blood_request) -> list:
     Returns top matching donors.
     """
 
+    if not getattr(blood_request, "blood_group", None):
+        return []
+
     COMPATIBILITY = {
         "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
         "O+": ["O+", "A+", "B+", "AB+"],
@@ -77,9 +79,6 @@ def find_matched_donors(blood_request) -> list:
         "AB+": ["AB+"],
     }
 
-    if not blood_request.blood_group:
-        return []
-
     compatible_groups = COMPATIBILITY.get(
         blood_request.blood_group,
         []
@@ -87,13 +86,12 @@ def find_matched_donors(blood_request) -> list:
 
     from donors.models import Donor
 
-    donors = (
+    donors = list(
         Donor.objects.filter(
             blood_group__in=compatible_groups,
             available=True,
             city__iexact=blood_request.city,
-        )
-        .values(
+        ).values(
             "id",
             "name",
             "blood_group",
@@ -102,9 +100,7 @@ def find_matched_donors(blood_request) -> list:
         )
     )
 
-    donors = list(donors)
-
-    # Exact blood group matches first
+    # Exact blood group first
     donors.sort(
         key=lambda d: (
             d["blood_group"] != blood_request.blood_group,

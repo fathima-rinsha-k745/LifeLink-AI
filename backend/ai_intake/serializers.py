@@ -4,11 +4,6 @@ from requests_app.models import BloodRequest
 VALID_BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
 
 class AIIntakeSerializer(serializers.ModelSerializer):
-    blood_group = serializers.ChoiceField(
-        choices=VALID_BLOOD_GROUPS,
-        allow_null=True,
-        required=False
-    )
 
     class Meta:
         model = BloodRequest
