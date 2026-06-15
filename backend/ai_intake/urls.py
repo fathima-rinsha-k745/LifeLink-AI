@@ -3,7 +3,7 @@ from .views import EmergencyAIIntakeView
 
 urlpatterns = [
     path(
-        "ai-intake/",
+        "requests/ai-intake/",
         EmergencyAIIntakeView.as_view(),
         name="ai-intake"
     ),

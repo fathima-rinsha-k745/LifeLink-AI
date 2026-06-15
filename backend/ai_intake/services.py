@@ -4,7 +4,14 @@ import json
 try:
     import anthropic
 except ImportError:
-    anthropic = None
+    class DummyAnthropic:
+        class APIError(Exception):
+            pass
+
+        class Anthropic:
+            pass
+
+    anthropic = DummyAnthropic()
 from django.conf import settings
 
 

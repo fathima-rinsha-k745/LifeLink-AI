@@ -29,6 +29,11 @@ class EmergencyAIIntakeView(APIView):
                 {"error": "description field is required"},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        if len(raw_text) < 20:
+         return Response(
+        {"error": "Description too short"},
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
         if len(raw_text) > 1000:
             return Response(
