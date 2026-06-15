@@ -1,46 +1,55 @@
 # ai_intake/services.py
 
 import json
-import anthropic
+try:
+    import anthropic
+except ImportError:
+    anthropic = None
 from django.conf import settings
 
 
 def parse_emergency_text(raw_text: str) -> dict | None:
     """
-    Sends raw emergency description to Claude API.
-    Returns structured dict or None if parsing fails.
+    Mock AI parser until Anthropic API is configured.
     """
-    try:
-        client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
 
-        message = client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=512,
-            system=SYSTEM_PROMPT,
-            messages=[
-                {"role": "user", "content": raw_text}
-            ]
+    if anthropic is None:
+        return {
+            "patient_name": "Test Patient",
+            "blood_group": "O-",
+            "units_needed": 1,
+            "hospital": "Test Hospital",
+            "city": "Thrissur",
+            "urgency": "urgent",
+            "time_window_hours": 2,
+            "contact_phone": None,
+            "additional_notes": raw_text[:100],
+            "confidence_score": 0.95,
+        }
+
+    try:
+        client = anthropic.Anthropic(
+            api_key=getattr(settings, "ANTHROPIC_API_KEY", "")
         )
 
-        raw_output = message.content[0].text.strip()
+        # Actual API call will be added later
+        return {
+            "patient_name": "Test Patient",
+            "blood_group": "O-",
+            "units_needed": 1,
+            "hospital": "Test Hospital",
+            "city": "Thrissur",
+            "urgency": "urgent",
+            "time_window_hours": 2,
+            "contact_phone": None,
+            "additional_notes": raw_text[:100],
+            "confidence_score": 0.95,
+        }
 
-        # Strip any accidental markdown fences
-        if raw_output.startswith("```"):
-            raw_output = raw_output.split("```")[1]
-            if raw_output.startswith("json"):
-                raw_output = raw_output[4:]
-
-        parsed = json.loads(raw_output)
-        return parsed
-
-    except json.JSONDecodeError:
-        # AI returned non-JSON — log and fail gracefully
+    except Exception as e:
+        print(f"AI error: {e}")
         return None
-    except anthropic.APIError as e:
-        # API down or key invalid — fail gracefully
-        print(f"Anthropic API error: {e}")
-        return None
-
+    
 
 def find_matched_donors(blood_request) -> list:
     """
