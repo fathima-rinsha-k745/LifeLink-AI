@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import AIIntakeSerializer
-from .gemini_service import parse_emergency_text_gemini
+from .gemini_service import parse_emergency_text_gemini as parse_emergency_text
 from .services import find_matched_donors
 from .models import AIIntakeLog
 
@@ -39,7 +39,7 @@ class EmergencyAIIntakeView(APIView):
             )
 
         # Parse with Gemini
-        ai_result = parse_emergency_text_gemini(raw_text)
+        ai_result = parse_emergency_text(raw_text)
 
         if ai_result is None:
             return Response(
