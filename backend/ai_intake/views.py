@@ -6,7 +6,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
 from .serializers import AIIntakeSerializer
-from .services import parse_emergency_text, find_matched_donors
+from .gemini_service import parse_emergency_text_gemini
+from .services import find_matched_donors
 from .models import AIIntakeLog
 
 
@@ -37,8 +38,8 @@ class EmergencyAIIntakeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Parse using AI
-        ai_result = parse_emergency_text(raw_text)
+        # Parse with Gemini
+        ai_result = parse_emergency_text_gemini(raw_text)
 
         if ai_result is None:
             return Response(
@@ -49,11 +50,31 @@ class EmergencyAIIntakeView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
 
-        # Convert AI urgency → model urgency
+        # Normalize blood group
+        blood_map = {
+            "O negative": "O-",
+            "O positive": "O+",
+            "A negative": "A-",
+            "A positive": "A+",
+            "B negative": "B-",
+            "B positive": "B+",
+            "AB negative": "AB-",
+            "AB positive": "AB+",
+        }
+
+        if ai_result.get("blood_group"):
+            ai_result["blood_group"] = blood_map.get(
+                ai_result["blood_group"],
+                ai_result["blood_group"]
+            )
+
+        # Normalize urgency
         urgency_map = {
             "critical": "Critical",
             "urgent": "High",
+            "high": "High",
             "moderate": "Medium",
+            "medium": "Medium",
             "low": "Low",
         }
 
@@ -63,8 +84,16 @@ class EmergencyAIIntakeView(APIView):
                 "Medium"
             )
 
-        # Validate data
-        serializer = AIIntakeSerializer(data=ai_result)
+        # Keep only fields that exist in BloodRequest
+        request_data = {
+            "patient_name": ai_result.get("patient_name"),
+            "blood_group": ai_result.get("blood_group"),
+            "hospital": ai_result.get("hospital"),
+            "city": ai_result.get("city"),
+            "urgency": ai_result.get("urgency"),
+        }
+
+        serializer = AIIntakeSerializer(data=request_data)
 
         if not serializer.is_valid():
             return Response(
@@ -88,7 +117,7 @@ class EmergencyAIIntakeView(APIView):
             blood_request=blood_request
         )
 
-        # Find donors
+        # Find matching donors
         matched_donors = find_matched_donors(blood_request)
 
         return Response(
@@ -98,7 +127,7 @@ class EmergencyAIIntakeView(APIView):
                 "blood_request": serializer.data,
                 "matched_donors": matched_donors,
                 "donors_found": len(matched_donors),
-                "ai_confidence": ai_result.get("confidence_score", 0)
+                "ai_confidence": ai_result.get("confidence_score", 0),
             },
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )

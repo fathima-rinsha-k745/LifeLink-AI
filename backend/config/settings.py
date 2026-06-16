@@ -32,7 +32,9 @@ DEBUG = env.bool('DEBUG', default=True)
 
 ALLOWED_HOSTS = []
 CORS_ALLOW_ALL_ORIGINS = True
+import os
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Application definition
 
