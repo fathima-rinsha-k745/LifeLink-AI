@@ -1,5 +1,5 @@
 
-
+[![Django Tests](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml/badge.svg)](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml)
 # 🩸 LifeLink AI
 
 ### AI-Powered Blood Donor Matching & Emergency Response Platform
