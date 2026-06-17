@@ -87,25 +87,6 @@ python manage.py runserver
 
 ---
 
-## 🔐 Environment Variables
-
-Create a `.env` file in `backend/`:
-
-```env
-SECRET_KEY=your_django_secret_key
-DEBUG=True
-SUPABASE_DB_NAME=your_database_name
-SUPABASE_DB_USER=your_database_user
-SUPABASE_DB_PASSWORD=your_password
-SUPABASE_DB_HOST=your_supabase_host
-SUPABASE_DB_PORT=5432
-GEMINI_API_KEY=your_gemini_api_key
-```
-
-> ⚠️ Never commit your `.env` file. Add it to `.gitignore`.
-
----
-
 ## 📄 API Documentation
 
 Swagger UI: **http://127.0.0.1:8000/api/schema/swagger-ui/**
