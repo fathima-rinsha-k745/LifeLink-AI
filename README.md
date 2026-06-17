@@ -6,7 +6,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![Django](https://img.shields.io/badge/Django-4.x-092E20?style=for-the-badge&logo=django&logoColor=white)](https://djangoproject.com)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org)
+
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Gemini AI](https://img.shields.io/badge/Google-Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google)
 
@@ -46,11 +46,6 @@ During emergencies, time is everything. Users describe a blood emergency in plai
 ---
 
 ## 🛠️ Tech Stack
-
-### Frontend
-- **React.js** — UI components & SPA routing
-- **HTML5 / CSS3** — Markup and styling
-- **Axios** — HTTP client for API calls
 
 ### Backend
 - **Python / Django** — Core language and web framework
@@ -158,11 +153,6 @@ LifeLink-AI/
 │   ├── blood_requests/  # Request management
 │   ├── ai_intake/       # Gemini AI integration
 │   └── requirements.txt
-├── frontend/
-│   └── src/
-│       ├── components/
-│       ├── pages/
-│       └── services/
 ├── .github/
 │   └── workflows/ci.yml
 └── README.md
