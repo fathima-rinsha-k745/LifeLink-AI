@@ -9,10 +9,22 @@ from .serializers import AIIntakeSerializer
 from .gemini_service import parse_emergency_text_gemini as parse_emergency_text
 from .services import find_matched_donors
 from .models import AIIntakeLog
+from drf_spectacular.utils import extend_schema
 
 
 class EmergencyAIIntakeView(APIView):
     permission_classes = [IsAuthenticated]
+    @extend_schema(
+    description="AI-powered emergency blood request intake endpoint",
+    request={
+        "application/json": {
+            "example": {
+                "description":
+                "Patient Rajan needs 2 units of O negative blood urgently."
+            }
+        }
+    }
+)
 
     def post(self, request):
         raw_text = request.data.get("description", "").strip()

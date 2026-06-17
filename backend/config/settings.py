@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'ai_intake',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -96,6 +97,7 @@ REST_FRAMEWORK = {
         
 
     'PAGE_SIZE': 5,
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
@@ -159,4 +161,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-
+SPECTACULAR_SETTINGS = {
+    "TITLE": "LifeLink AI API",
+    "DESCRIPTION": "AI-powered Blood Donor Matching and Emergency Response Platform",
+    "VERSION": "1.0.0",
+}
