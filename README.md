@@ -124,7 +124,7 @@ http://127.0.0.1:8000/
 
 ### Postman Collection
 
-https://fathimarinshak745-4117795.postman.co/workspace/05678528-b20e-4983-873d-d8e64c975325/documentation/55563067-41b87d9a-760f-4170-a466-7437beb61a6d?sideView=agentMode
+https://documenter.getpostman.com/view/55563067/2sBXwvH81i
 
 ---
 
