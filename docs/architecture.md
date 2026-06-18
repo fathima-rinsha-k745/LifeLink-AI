@@ -1,51 +1,39 @@
 flowchart TD
 
-    subgraph Client Layer
-        A[User]
-        B[React Frontend]
-    end
+    A[User / Hospital Staff] --> B[React Frontend]
 
-    subgraph API Layer
-        C[Django REST API]
-        D[JWT Authentication]
-        K[Donor Matching Engine]
-    end
+    B --> C[Django REST API]
 
-    subgraph AI Layer
-        E[Google Gemini AI]
-        F[Emergency Request Parsing]
-    end
+    C --> D[JWT Authentication]
 
-    subgraph Database Layer
-        G[Blood Requests]
-        H[AI Intake Logs]
-        I[(Supabase PostgreSQL)]
-    end
+    C --> E[Gemini AI Service]
 
-    subgraph Documentation Layer
-        J[Swagger UI]
-        L[Postman Documentation]
-        M[MkDocs Site]
-    end
+    E --> F[Extract Structured Data]
 
-    subgraph CI/CD Layer
-        N[GitHub Actions]
-    end
+    F --> G[Validation Layer]
 
-    A --> B
-    B --> C
-    C --> D
-    C --> E
-    E --> F
-    F --> G
-    G --> I
-    F --> H
-    H --> I
-    G --> K
-    K --> I
-    K --> B
+    G --> H[Blood Request Storage]
 
-    J --> C
-    L --> C
+    H --> I[(Supabase PostgreSQL)]
+
+    G --> J[AI Intake Logs]
+
+    J --> I
+
+    H --> K[Donor Matching Engine]
+
+    K --> L[Donor Database]
+
+    L --> I
+
+    K --> M[Matched Donors]
+
     M --> C
-    N --> C
+
+    C --> B
+
+    N[Swagger Documentation] --> C
+    O[Postman Collection] --> C
+    P[MkDocs Documentation] --> C
+
+    Q[GitHub Actions CI/CD] --> C
