@@ -13,6 +13,13 @@ from drf_spectacular.utils import extend_schema
 
 
 class EmergencyAIIntakeView(APIView):
+    """
+    Accepts emergency request text,
+    processes it using Gemini AI,
+    validates extracted data,
+    stores the request,
+    and returns matching donors.
+    """
     permission_classes = [IsAuthenticated]
     @extend_schema(
     description="AI-powered emergency blood request intake endpoint",

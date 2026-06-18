@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 
 class AIIntakeLog(models.Model):
     """
-    Audit log for every AI parsing call.
-    Stores raw input, AI output, and links to the created blood request.
+    Stores AI input, AI output,
+    confidence score, and audit logs.
     """
     user = models.ForeignKey(
         User,

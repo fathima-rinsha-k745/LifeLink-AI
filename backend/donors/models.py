@@ -1,6 +1,11 @@
 from django.db import models
 
 class Donor(models.Model):
+    """
+    Stores blood donor information including
+    blood group, city, contact details,
+    and availability status.
+    """
     BLOOD_GROUPS = [
         ('A+', 'A+'),
         ('A-', 'A-'),

@@ -9,6 +9,10 @@ from .serializers import BloodRequestSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 
 class BloodRequestViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD operations
+    for blood requests.
+    """
     queryset = BloodRequest.objects.all()
     serializer_class = BloodRequestSerializer
     permission_classes = [IsAuthenticated]

@@ -10,6 +10,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 
 class DonorViewSet(viewsets.ModelViewSet):
+    """
+    Provides CRUD operations
+    for donor records.
+    """
     queryset = Donor.objects.all()
     serializer_class = DonorSerializer
     permission_classes = [IsAuthenticated]

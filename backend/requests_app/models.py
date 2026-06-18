@@ -3,6 +3,10 @@ from django.db import models
 # Create your models here.
 
 class BloodRequest(models.Model):
+    """
+    Stores emergency blood request information
+    submitted by hospitals or recipients.
+    """
     URGENCY_CHOICES = [
         ('Low', 'Low'),
         ('Medium', 'Medium'),

@@ -30,6 +30,14 @@ During emergencies, time is everything. Users describe a blood emergency in plai
 
 ---
 
+## ❗ Problem Statement
+
+Finding compatible blood donors during medical emergencies is often time-consuming and inefficient. Hospitals and patients may struggle to locate available donors quickly, resulting in delays in treatment.
+
+LifeLink AI addresses this challenge by combining Artificial Intelligence, donor management, and emergency response workflows to help connect blood donors and recipients faster.
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
@@ -102,13 +110,43 @@ Swagger UI: **http://127.0.0.1:8000/api/schema/swagger-ui/**
 | `GET` | `/api/ai-logs/` | View AI logs | ✅ |
 
 ---
+## 📚 Project Documentation
 
-## 🤖 AI Emergency Intake Workflow
+### Swagger UI
 
-```
-User Input → Gemini AI → Structured JSON Extraction
-     → Validation → Save Blood Request
-     → Save AI Logs → Find Matching Donors → API Response
+http://127.0.0.1:8000/api/schema/swagger-ui/
+
+### MkDocs Site
+
+Local Documentation:
+
+http://127.0.0.1:8000/
+
+### Postman Collection
+
+https://fathimarinshak745-4117795.postman.co/workspace/05678528-b20e-4983-873d-d8e64c975325/documentation/55563067-41b87d9a-760f-4170-a466-7437beb61a6d?sideView=agentMode
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+
+A[User Emergency Request]
+--> B[Gemini AI Processing]
+
+B --> C[Structured Data Extraction]
+
+C --> D[Validation Layer]
+
+D --> E[Blood Request Storage]
+
+E --> F[AI Audit Logs]
+
+F --> G[Donor Matching Engine]
+
+G --> H[Matched Donors Response]
 ```
 
 ### Supported blood group compatibility
@@ -159,6 +197,19 @@ coverage html
 ```
 
 ---
+## 📸 Screenshots
+
+### Swagger API Documentation
+
+![Swagger UI](docs/images/swagger-ui.png)
+
+### MkDocs Documentation Site
+
+![MkDocs Overview](docs/images/mkdocs-overview.png)
+
+### System Architecture & AI Workflow
+
+![Architecture](docs/images/System-workflow.png)
 
 ## 🔮 Future Enhancements
 
