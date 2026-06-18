@@ -130,24 +130,9 @@ https://documenter.getpostman.com/view/55563067/2sBXwvH81i
 
 ## 🏗️ System Architecture
 
-```mermaid
-flowchart TD
+See detailed architecture:
 
-A[User Emergency Request]
---> B[Gemini AI Processing]
-
-B --> C[Structured Data Extraction]
-
-C --> D[Validation Layer]
-
-D --> E[Blood Request Storage]
-
-E --> F[AI Audit Logs]
-
-F --> G[Donor Matching Engine]
-
-G --> H[Matched Donors Response]
-```
+docs/architecture.md
 
 ### Supported blood group compatibility
 
