@@ -1,39 +1,30 @@
+# LifeLink AI Architecture
+
+```mermaid
 flowchart TD
 
-    A[User / Hospital Staff] --> B[React Frontend]
+A[User Emergency Request]
+--> B[Gemini AI Processing]
 
-    B --> C[Django REST API]
+B --> C[Structured Data Extraction]
 
-    C --> D[JWT Authentication]
+C --> D[Validation Layer]
 
-    C --> E[Gemini AI Service]
+D --> E[Blood Request Storage]
 
-    E --> F[Extract Structured Data]
+E --> F[AI Audit Logs]
 
-    F --> G[Validation Layer]
+F --> G[Donor Matching Engine]
 
-    G --> H[Blood Request Storage]
+G --> H[Matched Donors Response]
+```
 
-    H --> I[(Supabase PostgreSQL)]
+## Components
 
-    G --> J[AI Intake Logs]
-
-    J --> I
-
-    H --> K[Donor Matching Engine]
-
-    K --> L[Donor Database]
-
-    L --> I
-
-    K --> M[Matched Donors]
-
-    M --> C
-
-    C --> B
-
-    N[Swagger Documentation] --> C
-    O[Postman Collection] --> C
-    P[MkDocs Documentation] --> C
-
-    Q[GitHub Actions CI/CD] --> C
+* User Interface (React)
+* Django REST API
+* Gemini AI Service
+* Supabase PostgreSQL
+* Donor Matching Engine
+* Swagger Documentation
+* Postman Collection

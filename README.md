@@ -207,9 +207,6 @@ coverage html
 
 ![MkDocs Overview](docs/images/mkdocs-overview.png)
 
-### System Architecture & AI Workflow
-
-![Architecture](docs/images/System-workflow.png)
 
 ## 🔮 Future Enhancements
 
