@@ -192,6 +192,8 @@ coverage html
 
 ![MkDocs Overview](docs/images/mkdocs-overview.png)
 
+### Test Coverage Report
+![coverage report](docs/images/coverage-report.png)
 
 ## 🔮 Future Enhancements
 
