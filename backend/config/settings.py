@@ -28,9 +28,13 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = 'django-insecure-cu&ly!^tja-2e69piq(a@n^&rs-!hyoyjyw$gavpw+()*5urve'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env.bool('DEBUG', default=True)
+DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS =[
+    "localhost",
+    "127.0.0.1",
+    ".railway.app",
+]
 CORS_ALLOW_ALL_ORIGINS = True
 import os
 
