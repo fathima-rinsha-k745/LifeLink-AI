@@ -8,26 +8,6 @@ from .serializers import RegisterSerializer
 
 
 @extend_schema(
-    request=RegisterSerializer,
-    responses={201: None},
-    auth=[],
-)
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def register(request):
-    serializer = RegisterSerializer(data=request.data)
-
-    if serializer.is_valid():
-        serializer.save()
-        return Response(
-            {"message": "User registered successfully"},
-            status=201
-        )
-
-    return Response(serializer.errors, status=400)
-
-
-@extend_schema(
     auth=[],
 )
 @api_view(['POST'])
@@ -51,3 +31,29 @@ def login(request):
         {"message": "Invalid username or password"},
         status=400
     )
+
+@extend_schema(
+    request=RegisterSerializer,
+    responses={201: None},
+    auth=[],
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register(request):
+    try:
+        serializer = RegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "User registered successfully"},
+                status=201
+            )
+
+        return Response(serializer.errors, status=400)
+
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=500
+        )
