@@ -127,6 +127,15 @@ http://127.0.0.1:8000/
 https://documenter.getpostman.com/view/55563067/2sBXwvH81i
 
 ---
+## Live Deployments
+
+Production:
+https://lifelink-ai-production-51f6.up.railway.app/api/schema/swagger-ui/
+
+Staging:
+https://lifelink-ai-staging.up.railway.app/api/schema/swagger-ui/
+
+---
 
 ## 🏗️ System Architecture
 
@@ -195,6 +204,10 @@ coverage html
 ### Test Coverage Report
 
 ![coverage report](docs/images/coverage-report.png)
+
+### UptimeRobot Monitoring
+
+![UptimeRobot](docs/images/uptimerobot.png)
 
 ---
 
