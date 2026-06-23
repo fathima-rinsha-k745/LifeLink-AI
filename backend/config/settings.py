@@ -30,12 +30,15 @@ SECRET_KEY = 'django-insecure-cu&ly!^tja-2e69piq(a@n^&rs-!hyoyjyw$gavpw+()*5urve
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool('DEBUG', default=False)
 
-ALLOWED_HOSTS =[
+ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".railway.app",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://lifelink-ai-production-51f6.up.railway.app",
+]
 import os
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -56,6 +59,7 @@ INSTALLED_APPS = [
     'django_filters',
     'ai_intake',
     'drf_spectacular',
+    
 ]
 
 MIDDLEWARE = [

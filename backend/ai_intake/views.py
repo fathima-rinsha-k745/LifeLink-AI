@@ -10,6 +10,8 @@ from .gemini_service import parse_emergency_text_gemini as parse_emergency_text
 from .services import find_matched_donors
 from .models import AIIntakeLog
 from drf_spectacular.utils import extend_schema
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 
 class EmergencyAIIntakeView(APIView):
@@ -21,6 +23,11 @@ class EmergencyAIIntakeView(APIView):
     and returns matching donors.
     """
     permission_classes = [IsAuthenticated]
+
+    @method_decorator(
+        ratelimit(key='ip', rate='10/m', method='POST')
+    )
+
     @extend_schema(
     description="AI-powered emergency blood request intake endpoint",
     request={
