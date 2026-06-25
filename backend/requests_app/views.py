@@ -26,24 +26,13 @@ from .models import BloodRequest
 
 @api_view(['GET'])
 def match_donors(request, request_id):
-    blood_request = BloodRequest.objects.get(id=request_id)
+    try:
+        blood_request = BloodRequest.objects.get(id=request_id)
+    except BloodRequest.DoesNotExist:
+        return Response({"error": "Blood request not found"}, status=404)
 
-    donors = Donor.objects.filter(
-        blood_group=blood_request.blood_group,
-        city=blood_request.city,
-        available=True
-    )
-
-    matches = []
-
-    for donor in donors:
-        matches.append({
-            "id": donor.id,
-            "name": donor.name,
-            "blood_group": donor.blood_group,
-            "city": donor.city,
-            "phone": donor.phone
-        })
+    from ai_intake.services import find_matched_donors
+    matches = find_matched_donors(blood_request)
 
     return Response({
         "request_id": blood_request.id,

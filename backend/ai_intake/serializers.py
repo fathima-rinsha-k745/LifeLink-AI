@@ -18,3 +18,21 @@ class AIIntakeSerializer(serializers.ModelSerializer):
             "city",
             "urgency",
         ]
+
+
+from .models import AIIntakeLog
+
+class AIIntakeLogSerializer(serializers.ModelSerializer):
+    username = serializers.ReadOnlyField(source='user.username')
+
+    class Meta:
+        model = AIIntakeLog
+        fields = [
+            "id",
+            "username",
+            "raw_input",
+            "ai_output",
+            "confidence_score",
+            "blood_request",
+            "created_at",
+        ]

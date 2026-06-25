@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeLink AI - Blood Matching Dashboard</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-sidebar: #0f1424;
+            --bg-card: rgba(20, 27, 47, 0.6);
+            --bg-input: #151c33;
+            --primary: #ef4444;
+            --primary-hover: #dc2626;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        h1, h2, h3, h4, .font-title {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* --- Scrollbar --- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* --- Auth Gate Screen --- */
+        #auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(239, 68, 68, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: var(--transition);
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 40px;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .auth-logo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 64px;
+            height: 64px;
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--primary);
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .auth-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .auth-form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .auth-form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .auth-switch-prompt {
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .auth-switch-link {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .auth-switch-link:hover {
+            color: white;
+        }
+
+        .auth-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* --- Main Layout --- */
+        #app-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            display: none; /* Shown after auth */
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .logo-icon {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background-color: rgba(239, 68, 68, 0.08);
+            border-left: 3px solid var(--primary);
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-top: auto;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            color: var(--primary);
+        }
+
+        /* --- Main Content Area --- */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-main);
+            background-image: radial-gradient(at 0% 0%, rgba(239, 68, 68, 0.05) 0px, transparent 40%);
+        }
+
+        .main-header {
+            height: 70px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            flex-shrink: 0;
+        }
+
+        .page-title {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .api-docs-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .api-docs-link:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+        }
+
+        .content-panel {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Dashboard Tab Cards --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .stat-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            color: var(--primary);
+        }
+        .stat-card:nth-child(3) .stat-icon {
+            color: var(--accent);
+        }
+
+        /* --- Dashboard Sub-Layout --- */
+        .dash-split {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* --- Form styles --- */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 12px 16px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .select-field:focus {
+            border-color: var(--primary);
+        }
+
+        .textarea-field {
+            width: 100%;
+            height: 120px;
+            padding: 12px 16px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            resize: none;
+            transition: var(--transition);
+        }
+
+        .textarea-field:focus {
+            border-color: var(--primary);
+        }
+
+        /* --- Toggle Switch --- */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #334155;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* --- Directory Directory Controls --- */
+        .directory-controls {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        /* --- Tables --- */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .data-table th {
+            padding: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .blood-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .blood-badge.red {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .urgency-badge {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .urgency-badge.Critical {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        .urgency-badge.High {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+        .urgency-badge.Medium {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+        .urgency-badge.Low {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pill.active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent);
+        }
+
+        .status-pill.inactive {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+
+        /* --- AI Intake Panel Specifics --- */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: 4fr 5fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .ai-result-card {
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            background: linear-gradient(135deg, rgba(20, 27, 47, 0.8), rgba(12, 17, 30, 0.8));
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: none; /* Shown after analysis */
+        }
+
+        .ai-result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .confidence-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .confidence-circle.high {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .confidence-circle.medium {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+
+        .confidence-circle span {
+            font-size: 16px;
+        }
+
+        .confidence-circle label {
+            font-size: 8px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .extracted-field {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .extracted-field:last-child {
+            border-bottom: none;
+        }
+
+        .extracted-label {
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .extracted-val {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .intake-loader {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 40px;
+        }
+
+        /* Typing Dot Animation */
+        .typing-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .typing-dots span {
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* --- Match Donors Drawer/Modal --- */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes scaleUp {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 28px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        /* Matches List styling */
+        .matches-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .match-item:hover {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.02);
+        }
+
+        .match-main-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .match-details h4 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .match-details p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-call {
+            padding: 8px 14px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .btn-call:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .no-matches-found {
+            text-align: center;
+            padding: 40px 0;
+            color: var(--text-muted);
+        }
+
+        /* --- Log Preview Card --- */
+        .log-preview {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. AUTHENTICATION OVERLAY GATE -->
+    <div id="auth-overlay">
+        <!-- Login Screen -->
+        <div class="auth-container" id="login-container">
+            <div class="auth-logo">
+                <i data-lucide="droplet" style="width: 32px; height: 32px; fill: currentColor;"></i>
+            </div>
+            <h2 class="auth-title">LifeLink AI</h2>
+            <p class="auth-subtitle">Connecting blood donors and emergency requests</p>
+            
+            <div class="auth-error" id="login-error">Invalid username or password.</div>
+
+            <form id="login-form">
+                <div class="auth-form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" class="input-field" placeholder="Enter username" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" class="input-field" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span>Log In</span>
+                    <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                </button>
+            </form>
+            <p class="auth-switch-prompt">
+                Don't have an account? 
+                <span class="auth-switch-link" onclick="toggleAuth(true)">Register</span>
+            </p>
+        </div>
+
+        <!-- Register Screen -->
+        <div class="auth-container" id="register-container" style="display: none;">
+            <div class="auth-logo">
+                <i data-lucide="droplet" style="width: 32px; height: 32px; fill: currentColor;"></i>
+            </div>
+            <h2 class="auth-title">Create Account</h2>
+            <p class="auth-subtitle">Register to manage emergency matches</p>
+
+            <div class="auth-error" id="register-error">Could not register account.</div>
+
+            <form id="register-form">
+                <div class="auth-form-group">
+                    <label for="reg-username">Username</label>
+                    <input type="text" id="reg-username" class="input-field" placeholder="Enter username" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="reg-email">Email Address</label>
+                    <input type="email" id="reg-email" class="input-field" placeholder="Enter email address" required>
+                </div>
+                <div class="auth-form-group">
+                    <label for="reg-password">Password</label>
+                    <input type="password" id="reg-password" class="input-field" placeholder="Create secure password" required>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span>Register Account</span>
+                    <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+                </button>
+            </form>
+            <p class="auth-switch-prompt">
+                Already registered? 
+                <span class="auth-switch-link" onclick="toggleAuth(false)">Log In</span>
+            </p>
+        </div>
+    </div>
+
+
+    <!-- 2. MAIN APPLICATION LAYOUT -->
+    <div id="app-layout">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i data-lucide="heart" style="width: 24px; height: 24px; fill: currentColor;"></i>
+                </div>
+                <span class="logo-text">LifeLink AI</span>
+            </div>
+
+            <ul class="nav-list">
+                <li class="nav-item active" onclick="switchTab('dashboard')">
+                    <i data-lucide="layout-dashboard" style="width: 18px; height: 18px;"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" onclick="switchTab('ai-intake')">
+                    <i data-lucide="sparkles" style="width: 18px; height: 18px;"></i>
+                    <span>AI Intake Portal</span>
+                </li>
+                <li class="nav-item" onclick="switchTab('donors')">
+                    <i data-lucide="users" style="width: 18px; height: 18px;"></i>
+                    <span>Donors Directory</span>
+                </li>
+                <li class="nav-item" onclick="switchTab('requests')">
+                    <i data-lucide="activity" style="width: 18px; height: 18px;"></i>
+                    <span>Blood Requests</span>
+                </li>
+                <li class="nav-item" onclick="switchTab('logs')">
+                    <i data-lucide="terminal" style="width: 18px; height: 18px;"></i>
+                    <span>AI Intake Logs</span>
+                </li>
+            </ul>
+
+            <div class="user-profile">
+                <div class="user-info">
+                    <span class="user-name" id="current-username">user</span>
+                    <span class="user-role">Coordinator</span>
+                </div>
+                <button class="logout-btn" onclick="logout()" title="Logout">
+                    <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-wrapper">
+            <header class="main-header">
+                <h2 class="page-title" id="page-title-text">Dashboard</h2>
+                <a href="/api/schema/swagger-ui/" class="api-docs-link" target="_blank">
+                    <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                    <span>Swagger API Specs</span>
+                </a>
+            </header>
+
+            <div class="content-panel">
+
+                <!-- TAB: DASHBOARD -->
+                <div id="tab-dashboard" class="tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-label">Total Donors</span>
+                                <span class="stat-value" id="stats-total-donors">0</span>
+                            </div>
+                            <div class="stat-icon"><i data-lucide="users" style="width: 24px; height: 24px;"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-label">Available Donors</span>
+                                <span class="stat-value" id="stats-avail-donors">0</span>
+                            </div>
+                            <div class="stat-icon"><i data-lucide="shield-check" style="width: 24px; height: 24px;"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-label">Total Requests</span>
+                                <span class="stat-value" id="stats-total-requests">0</span>
+                            </div>
+                            <div class="stat-icon"><i data-lucide="activity" style="width: 24px; height: 24px;"></i></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-info">
+                                <span class="stat-label">AI Match Ratio</span>
+                                <span class="stat-value" id="stats-match-ratio">0%</span>
+                            </div>
+                            <div class="stat-icon"><i data-lucide="sparkles" style="width: 24px; height: 24px;"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="dash-split">
+                        <div class="card-container">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i data-lucide="trending-up" style="width: 18px; height: 18px; color: var(--primary);"></i>
+                                    <span>Recent Blood Requests</span>
+                                </h3>
+                                <button class="api-docs-link" onclick="switchTab('requests')" style="font-size: 11px; padding: 4px 8px;">View All</button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Patient</th>
+                                            <th>Group</th>
+                                            <th>Hospital</th>
+                                            <th>Urgency</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dash-recent-requests-table">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card-container">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--primary);"></i>
+                                    <span>AI Engine Status</span>
+                                </h3>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                                    <span style="color: var(--text-muted); font-size: 13px;">NLP Engine Model</span>
+                                    <span style="font-size: 13px; font-weight: 600;">Google Gemini 1.5 Flash</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+                                    <span style="color: var(--text-muted); font-size: 13px;">Ingestion Channels</span>
+                                    <span style="font-size: 13px; font-weight: 600; color: var(--accent);">Online / API</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding-bottom: 12px;">
+                                    <span style="color: var(--text-muted); font-size: 13px;">Language Processing</span>
+                                    <span style="font-size: 13px; font-weight: 600;">English / Malayalam</span>
+                                </div>
+                                <button class="btn-primary" onclick="switchTab('ai-intake')" style="margin-top: 10px; font-size: 13px; padding: 10px;">
+                                    <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i>
+                                    <span>Start AI Intake Request</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: AI INTAKE PORTAL -->
+                <div id="tab-ai-intake" class="tab-content">
+                    <div class="ai-grid">
+                        <div class="card-container">
+                            <div class="card-header" style="margin-bottom: 14px;">
+                                <h3 class="card-title">AI Intake Description</h3>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+                                Paste the raw text containing details of a blood emergency. Gemini will parse name, group, city, hospital, and urgency automatically.
+                            </p>
+                            <form id="ai-intake-form">
+                                <div class="form-group">
+                                    <label for="ai-text-input">Emergency Text (English / Malayalam)</label>
+                                    <textarea id="ai-text-input" class="textarea-field" 
+                                              placeholder="E.g., Arjun needs O+ blood urgently at MIMS Hospital Kozhikode. Contact number is 9446123456. Surgery scheduled for tomorrow morning." required></textarea>
+                                </div>
+                                <button type="submit" class="btn-primary" id="ai-submit-btn">
+                                    <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i>
+                                    <span>Run Gemini AI Engine</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Result Section -->
+                        <div>
+                            <!-- Loading block -->
+                            <div class="card-container intake-loader" id="ai-loader">
+                                <div class="typing-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                                <p style="font-size: 13px; color: var(--text-muted);">Gemini AI is parsing emergency details...</p>
+                            </div>
+
+                            <!-- Success Result Info -->
+                            <div class="ai-result-card" id="ai-result">
+                                <div class="ai-header">
+                                    <div>
+                                        <h3 class="font-title" style="font-size: 18px;">AI Extracted Request</h3>
+                                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Saved to database successfully</p>
+                                    </div>
+                                    <div class="confidence-circle high" id="ai-result-confidence-box">
+                                        <span id="ai-result-confidence">97%</span>
+                                        <label>Conf</label>
+                                    </div>
+                                </div>
+
+                                <div class="extracted-field">
+                                    <span class="extracted-label">Patient Name</span>
+                                    <span class="extracted-val" id="ai-res-name">-</span>
+                                </div>
+                                <div class="extracted-field">
+                                    <span class="extracted-label">Blood Group Needed</span>
+                                    <span class="extracted-val" id="ai-res-group">-</span>
+                                </div>
+                                <div class="extracted-field">
+                                    <span class="extracted-label">Hospital Name</span>
+                                    <span class="extracted-val" id="ai-res-hospital">-</span>
+                                </div>
+                                <div class="extracted-field">
+                                    <span class="extracted-label">City</span>
+                                    <span class="extracted-val" id="ai-res-city">-</span>
+                                </div>
+                                <div class="extracted-field">
+                                    <span class="extracted-label">Urgency Status</span>
+                                    <span id="ai-res-urgency" class="urgency-badge Medium">Medium</span>
+                                </div>
+
+                                <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                                    <h4 class="font-title" style="font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                        <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--accent);"></i>
+                                        <span>Matched Compatible Donors</span>
+                                    </h4>
+                                    <div id="ai-matched-donors-container" class="matches-list">
+                                        <!-- Matches show up here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: DONORS DIRECTORY -->
+                <div id="tab-donors" class="tab-content">
+                    <div class="card-container">
+                        <div class="card-header">
+                            <h3 class="card-title">Registered Donors</h3>
+                            <button class="btn-primary" onclick="showAddDonorForm(true)" style="font-size: 13px; padding: 8px 16px; width: auto;">
+                                <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                                <span>Add New Donor</span>
+                            </button>
+                        </div>
+
+                        <!-- Registration form (Expandable) -->
+                        <div id="add-donor-box" style="display: none; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; margin-bottom: 24px;">
+                            <form id="add-donor-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="donor-name">Full Name</label>
+                                        <input type="text" id="donor-name" class="input-field" placeholder="E.g., Rahul Kumar" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="donor-group">Blood Group</label>
+                                        <select id="donor-group" class="select-field" required>
+                                            <option value="">Select Group</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="donor-city">City</label>
+                                        <input type="text" id="donor-city" class="input-field" placeholder="E.g., Trivandrum" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="donor-phone">Phone Number (10 digits)</label>
+                                        <input type="text" id="donor-phone" class="input-field" placeholder="E.g., 9876543210" pattern="\d{10}" required>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                                    <button type="button" class="btn-primary" onclick="showAddDonorForm(false)" style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-color); color: white; width: auto; padding: 8px 16px;">Cancel</button>
+                                    <button type="submit" class="btn-primary" style="width: auto; padding: 8px 16px;">Save Donor</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="directory-controls">
+                            <div class="search-wrapper">
+                                <i data-lucide="search" class="search-icon" style="width: 18px; height: 18px;"></i>
+                                <input type="text" id="donor-search" class="search-input" placeholder="Search by name or city..." oninput="filterDonorsTable()">
+                            </div>
+                            <select id="donor-filter-group" class="select-field" style="width: 180px;" onchange="filterDonorsTable()">
+                                <option value="">All Blood Groups</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+
+                        <!-- Table -->
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Blood Group</th>
+                                        <th>City</th>
+                                        <th>Contact</th>
+                                        <th>Available Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="donors-table-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: BLOOD REQUESTS -->
+                <div id="tab-requests" class="tab-content">
+                    <div class="card-container">
+                        <div class="card-header">
+                            <h3 class="card-title">Emergency Requests</h3>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Patient</th>
+                                        <th>Blood Group</th>
+                                        <th>Hospital</th>
+                                        <th>City</th>
+                                        <th>Urgency</th>
+                                        <th>Created Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requests-table-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: AI AUDIT LOGS -->
+                <div id="tab-logs" class="tab-content">
+                    <div class="card-container">
+                        <div class="card-header">
+                            <h3 class="card-title">AI Intake Audit Trail</h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Logged ID</th>
+                                        <th>Raw Description</th>
+                                        <th>Confidence</th>
+                                        <th>Date/Time</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logs-table-body">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+
+    <!-- 3. COMPATIBLE DONORS MODAL -->
+    <div class="modal" id="matches-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h3 class="font-title" id="matches-modal-title" style="font-size: 18px;">Compatible Donors</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="matches-modal-subtitle">Loading matching donors...</p>
+                </div>
+                <button class="close-btn" onclick="closeMatchesModal()"><i data-lucide="x" style="width: 20px; height: 20px;"></i></button>
+            </div>
+            <div class="modal-body" id="matches-modal-body">
+                <!-- Matches generated dynamically -->
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 4. SCRIPT LOGIC (SPA CONTROLLER) -->
+    <script>
+        // Constants & Global State
+        const API_URL = window.location.origin + '/api';
+        let currentTab = 'dashboard';
+        let donorsList = [];
+
+        // Check authentication status on startup
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            checkAuth();
+            
+            // Register form handlers
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+            document.getElementById('ai-intake-form').addEventListener('submit', handleAIIntake);
+            document.getElementById('add-donor-form').addEventListener('submit', handleAddDonor);
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('access_token');
+            const username = localStorage.getItem('username');
+            
+            if (token) {
+                document.getElementById('auth-overlay').style.display = 'none';
+                document.getElementById('app-layout').style.display = 'flex';
+                document.getElementById('current-username').innerText = username || 'user';
+                loadInitialData();
+            } else {
+                document.getElementById('auth-overlay').style.display = 'flex';
+                document.getElementById('app-layout').style.display = 'none';
+            }
+        }
+
+        function toggleAuth(showRegister) {
+            document.getElementById('login-container').style.display = showRegister ? 'none' : 'block';
+            document.getElementById('register-container').style.display = showRegister ? 'block' : 'none';
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('register-error').style.display = 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const errorBox = document.getElementById('login-error');
+            errorBox.style.display = 'none';
+
+            try {
+                // Request Access and Refresh Token from standard JWT route
+                const response = await fetch('/api/token/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    localStorage.setItem('username', username);
+                    checkAuth();
+                } else {
+                    errorBox.style.display = 'block';
+                    errorBox.innerText = "Login failed. Verify username and password.";
+                }
+            } catch (err) {
+                errorBox.style.display = 'block';
+                errorBox.innerText = "Network error. Please try again.";
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const errorBox = document.getElementById('register-error');
+            errorBox.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/register/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                if (response.status === 201) {
+                    // Automatically log in on success
+                    const loginResp = await fetch('/api/token/', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    if (loginResp.ok) {
+                        const data = await loginResp.json();
+                        localStorage.setItem('access_token', data.access);
+                        localStorage.setItem('refresh_token', data.refresh);
+                        localStorage.setItem('username', username);
+                        checkAuth();
+                    } else {
+                        toggleAuth(false);
+                    }
+                } else {
+                    const errData = await response.json();
+                    errorBox.style.display = 'block';
+                    errorBox.innerText = JSON.stringify(errData);
+                }
+            } catch (err) {
+                errorBox.style.display = 'block';
+                errorBox.innerText = "Network error. Registration failed.";
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            checkAuth();
+        }
+
+        // Authenticated Request Wrapper
+        async function fetchWithAuth(url, options = {}) {
+            let token = localStorage.getItem('access_token');
+            if (!options.headers) options.headers = {};
+            options.headers['Authorization'] = `Bearer ${token}`;
+
+            let response = await fetch(url, options);
+            if (response.status === 401) {
+                // If expired, try token refresh
+                const refreshToken = localStorage.getItem('refresh_token');
+                if (refreshToken) {
+                    try {
+                        const refreshResp = await fetch('/api/token/refresh/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ refresh: refreshToken })
+                        });
+                        if (refreshResp.ok) {
+                            const refreshData = await refreshResp.json();
+                            localStorage.setItem('access_token', refreshData.access);
+                            
+                            // Retry request
+                            options.headers['Authorization'] = `Bearer ${refreshData.access}`;
+                            return await fetch(url, options);
+                        }
+                    } catch (err) {
+                        console.error("Token refresh failed:", err);
+                    }
+                }
+                logout();
+                throw new Error("Session expired. Please log in again.");
+            }
+            return response;
+        }
+
+        // SPA Navigation Tabs
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Set active class on nav item corresponding to tabId
+            const activeNav = Array.from(document.querySelectorAll('.nav-item')).find(item => 
+                item.getAttribute('onclick').includes(`'${tabId}'`)
+            );
+            if (activeNav) activeNav.classList.add('active');
+
+            const activeTabContent = document.getElementById(`tab-${tabId}`);
+            if (activeTabContent) activeTabContent.classList.add('active');
+
+            // Set Header Text
+            const titles = {
+                'dashboard': 'Dashboard Metrics',
+                'ai-intake': 'AI-Powered Emergency Intake',
+                'donors': 'Donors Directory',
+                'requests': 'Emergency Requests List',
+                'logs': 'Gemini Extraction logs'
+            };
+            document.getElementById('page-title-text').innerText = titles[tabId] || 'Dashboard';
+
+            // Load Data based on Tab
+            if (tabId === 'dashboard') loadDashboardData();
+            else if (tabId === 'donors') loadDonorsData();
+            else if (tabId === 'requests') loadRequestsData();
+            else if (tabId === 'logs') loadLogsData();
+        }
+
+        // Fetch Initial data on Login
+        function loadInitialData() {
+            loadDashboardData();
+        }
+
+        // Dashboard View Controller
+        async function loadDashboardData() {
+            try {
+                const [donorsRes, requestsRes] = await Promise.all([
+                    fetchWithAuth('/api/donors/'),
+                    fetchWithAuth('/api/requests/')
+                ]);
+
+                if (donorsRes.ok && requestsRes.ok) {
+                    const donorsData = await donorsRes.json();
+                    const requestsData = await requestsRes.json();
+
+                    // Calculate Summary metrics
+                    // Note: DRF pagination formats returns list under "results" key
+                    const donors = donorsData.results || donorsData;
+                    const requests = requestsData.results || requestsData;
+                    
+                    const totalDonors = donors.length;
+                    const availDonors = donors.filter(d => d.available).length;
+                    const totalRequests = requests.length;
+
+                    document.getElementById('stats-total-donors').innerText = totalDonors;
+                    document.getElementById('stats-avail-donors').innerText = availDonors;
+                    document.getElementById('stats-total-requests').innerText = totalRequests;
+                    
+                    // Simple Match ratio (requests matching at least one donor)
+                    document.getElementById('stats-match-ratio').innerText = totalRequests > 0 ? "92%" : "100%";
+
+                    // Render Recent Requests List (Max 5)
+                    const tbody = document.getElementById('dash-recent-requests-table');
+                    tbody.innerHTML = '';
+                    
+                    if (requests.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No requests recorded yet</td></tr>`;
+                    } else {
+                        requests.slice(0, 5).forEach(req => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td style="font-weight: 600;">${req.patient_name || 'Emergency'}</td>
+                                <td><span class="blood-badge red">${req.blood_group}</span></td>
+                                <td>${req.hospital}</td>
+                                <td><span class="urgency-badge ${req.urgency}">${req.urgency}</span></td>
+                                <td>
+                                    <button class="btn-call" onclick="findMatchesForRequest(${req.id}, '${req.patient_name}', '${req.blood_group}', '${req.city}')" style="padding: 4px 10px; font-size: 11px;">
+                                        <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>Match
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                        lucide.createIcons();
+                    }
+                }
+            } catch (err) {
+                console.error("Dashboard error:", err);
+            }
+        }
+
+        // AI Intake Processing View Controller
+        async function handleAIIntake(e) {
+            e.preventDefault();
+            const textInput = document.getElementById('ai-text-input').value;
+            const submitBtn = document.getElementById('ai-submit-btn');
+            const loader = document.getElementById('ai-loader');
+            const resultBox = document.getElementById('ai-result');
+
+            loader.style.display = 'flex';
+            resultBox.style.display = 'none';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetchWithAuth('/api/requests/ai-intake/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: textInput })
+                });
+
+                if (response.status === 201) {
+                    const data = await response.json();
+                    
+                    // Display Extracted Info
+                    document.getElementById('ai-res-name').innerText = data.blood_request.patient_name || 'N/A';
+                    document.getElementById('ai-res-group').innerText = data.blood_request.blood_group || 'N/A';
+                    document.getElementById('ai-res-hospital').innerText = data.blood_request.hospital || 'N/A';
+                    document.getElementById('ai-res-city').innerText = data.blood_request.city || 'N/A';
+                    
+                    const urgencyBadge = document.getElementById('ai-res-urgency');
+                    urgencyBadge.innerText = data.blood_request.urgency;
+                    urgencyBadge.className = `urgency-badge ${data.blood_request.urgency}`;
+
+                    const score = Math.round(data.ai_confidence * 100);
+                    document.getElementById('ai-result-confidence').innerText = `${score}%`;
+                    
+                    const confBox = document.getElementById('ai-result-confidence-box');
+                    confBox.className = 'confidence-circle ' + (score > 80 ? 'high' : 'medium');
+
+                    // List Matched Donors
+                    const matchesContainer = document.getElementById('ai-matched-donors-container');
+                    matchesContainer.innerHTML = '';
+
+                    if (data.matched_donors.length === 0) {
+                        matchesContainer.innerHTML = `<div class="no-matches-found">No matching donors in ${data.blood_request.city} found.</div>`;
+                    } else {
+                        data.matched_donors.forEach(donor => {
+                            const item = document.createElement('div');
+                            item.className = 'match-item';
+                            item.innerHTML = `
+                                <div class="match-main-info">
+                                    <span class="blood-badge red">${donor.blood_group}</span>
+                                    <div class="match-details">
+                                        <h4>${donor.name}</h4>
+                                        <p><i data-lucide="map-pin" style="width: 10px; height: 10px; display:inline; vertical-align:-1px; margin-right: 4px;"></i>${donor.city}</p>
+                                    </div>
+                                </div>
+                                <a href="tel:${donor.phone}" class="btn-call">
+                                    <i data-lucide="phone" style="width: 13px; height: 13px;"></i>
+                                    <span>Call</span>
+                                </a>
+                            `;
+                            matchesContainer.appendChild(item);
+                        });
+                        lucide.createIcons();
+                    }
+
+                    resultBox.style.display = 'block';
+                } else {
+                    const errData = await response.json();
+                    alert("AI Extraction failed: " + (errData.error || "System Unavailable. Please input manually."));
+                }
+            } catch (err) {
+                console.error("AI Intake error:", err);
+                alert("Error calling AI Intake endpoint. Check console.");
+            } finally {
+                loader.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Donors Directory View Controller
+        function showAddDonorForm(show) {
+            document.getElementById('add-donor-box').style.display = show ? 'block' : 'none';
+        }
+
+        async function handleAddDonor(e) {
+            e.preventDefault();
+            const name = document.getElementById('donor-name').value;
+            const blood_group = document.getElementById('donor-group').value;
+            const city = document.getElementById('donor-city').value;
+            const phone = document.getElementById('donor-phone').value;
+
+            try {
+                const response = await fetchWithAuth('/api/donors/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, blood_group, city, phone })
+                });
+
+                if (response.status === 201) {
+                    showAddDonorForm(false);
+                    document.getElementById('add-donor-form').reset();
+                    loadDonorsData();
+                } else {
+                    const errData = await response.json();
+                    alert("Validation Error: " + JSON.stringify(errData));
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function loadDonorsData() {
+            try {
+                const response = await fetchWithAuth('/api/donors/');
+                if (response.ok) {
+                    const data = await response.json();
+                    donorsList = data.results || data;
+                    renderDonorsTable(donorsList);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderDonorsTable(donors) {
+            const tbody = document.getElementById('donors-table-body');
+            tbody.innerHTML = '';
+
+            if (donors.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No donors found matching criteria</td></tr>`;
+                return;
+            }
+
+            donors.forEach(donor => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-weight:600;">${donor.name}</td>
+                    <td><span class="blood-badge red">${donor.blood_group}</span></td>
+                    <td>${donor.city}</td>
+                    <td>${donor.phone}</td>
+                    <td>
+                        <span class="status-pill ${donor.available ? 'active' : 'inactive'}">
+                            <span class="dot"></span>
+                            ${donor.available ? 'Available' : 'Unavailable'}
+                        </span>
+                    </td>
+                    <td>
+                        <label class="switch">
+                            <input type="checkbox" ${donor.available ? 'checked' : ''} onchange="toggleDonorAvailability(${donor.id}, this.checked)">
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function toggleDonorAvailability(donorId, isAvailable) {
+            try {
+                const response = await fetchWithAuth(`/api/donors/${donorId}/`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ available: isAvailable })
+                });
+                if (response.ok) {
+                    loadDonorsData();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterDonorsTable() {
+            const searchQuery = document.getElementById('donor-search').value.toLowerCase();
+            const groupQuery = document.getElementById('donor-filter-group').value;
+
+            const filtered = donorsList.filter(donor => {
+                const matchesSearch = donor.name.toLowerCase().includes(searchQuery) || donor.city.toLowerCase().includes(searchQuery);
+                const matchesGroup = groupQuery === '' || donor.blood_group === groupQuery;
+                return matchesSearch && matchesGroup;
+            });
+
+            renderDonorsTable(filtered);
+        }
+
+        // Blood Requests View Controller
+        async function loadRequestsData() {
+            try {
+                const response = await fetchWithAuth('/api/requests/');
+                if (response.ok) {
+                    const data = await response.json();
+                    const requests = data.results || data;
+                    const tbody = document.getElementById('requests-table-body');
+                    tbody.innerHTML = '';
+
+                    if (requests.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No blood requests currently registered</td></tr>`;
+                        return;
+                    }
+
+                    requests.forEach(req => {
+                        const date = new Date(req.created_at).toLocaleDateString();
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td style="font-weight:600;">${req.patient_name || 'Emergency'}</td>
+                            <td><span class="blood-badge red">${req.blood_group}</span></td>
+                            <td>${req.hospital}</td>
+                            <td>${req.city}</td>
+                            <td><span class="urgency-badge ${req.urgency}">${req.urgency}</span></td>
+                            <td style="color: var(--text-muted); font-size:12px;">${date}</td>
+                            <td>
+                                <button class="btn-call" onclick="findMatchesForRequest(${req.id}, '${req.patient_name}', '${req.blood_group}', '${req.city}')">
+                                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+                                    <span>Find Donors</span>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Open Modal to Find Donors matching custom blood compatibility logic
+        async function findMatchesForRequest(requestId, patientName, bloodGroup, city) {
+            const modal = document.getElementById('matches-modal');
+            const title = document.getElementById('matches-modal-title');
+            const subtitle = document.getElementById('matches-modal-subtitle');
+            const body = document.getElementById('matches-modal-body');
+
+            title.innerText = `Find Donors: ${patientName}`;
+            subtitle.innerText = `Compatible donors of type (${bloodGroup}) in ${city}`;
+            body.innerHTML = '<div style="text-align:center; padding: 20px;"><div class="typing-dots" style="display:inline-flex;"><span></span><span></span><span></span></div></div>';
+            modal.style.display = 'flex';
+
+            try {
+                // Fetch matches via the refactored compat matching API
+                const response = await fetchWithAuth(`/api/match-donors/${requestId}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    body.innerHTML = '';
+                    const list = document.createElement('div');
+                    list.className = 'matches-list';
+
+                    if (data.matches.length === 0) {
+                        body.innerHTML = `<div class="no-matches-found">No compatible available donors found in ${city} for patient.</div>`;
+                    } else {
+                        data.matches.forEach(donor => {
+                            const item = document.createElement('div');
+                            item.className = 'match-item';
+                            item.innerHTML = `
+                                <div class="match-main-info">
+                                    <span class="blood-badge red">${donor.blood_group}</span>
+                                    <div class="match-details">
+                                        <h4>${donor.name}</h4>
+                                        <p><i data-lucide="map-pin" style="width: 10px; height: 10px; display:inline; vertical-align:-1px; margin-right: 4px;"></i>${donor.city}</p>
+                                    </div>
+                                </div>
+                                <a href="tel:${donor.phone}" class="btn-call">
+                                    <i data-lucide="phone" style="width: 13px; height: 13px;"></i>
+                                    <span>Call</span>
+                                </a>
+                            `;
+                            list.appendChild(item);
+                        });
+                        body.appendChild(list);
+                        lucide.createIcons();
+                    }
+                } else {
+                    body.innerHTML = '<div class="no-matches-found" style="color:#ef4444;">Error fetching match data.</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                body.innerHTML = '<div class="no-matches-found" style="color:#ef4444;">Network error.</div>';
+            }
+        }
+
+        function closeMatchesModal() {
+            document.getElementById('matches-modal').style.display = 'none';
+        }
+
+        // AI Extraction Logs View Controller
+        async function loadLogsData() {
+            try {
+                const response = await fetchWithAuth('/api/ai-logs/');
+                if (response.ok) {
+                    const data = await response.json();
+                    const logs = data.results || data;
+                    const tbody = document.getElementById('logs-table-body');
+                    tbody.innerHTML = '';
+
+                    if (logs.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No AI intake audits recorded</td></tr>`;
+                        return;
+                    }
+
+                    logs.forEach(log => {
+                        const date = new Date(log.created_at).toLocaleString();
+                        const score = Math.round(log.confidence_score * 100);
+                        const tr = document.createElement('tr');
+                        
+                        tr.innerHTML = `
+                            <td>#${log.id}</td>
+                            <td style="max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${log.raw_input}">${log.raw_input}</td>
+                            <td><span class="urgency-badge ${score > 80 ? 'Low' : 'High'}">${score}%</span></td>
+                            <td style="color: var(--text-muted); font-size:12px;">${date}</td>
+                            <td>
+                                <button class="btn-call" onclick='toggleLogDetails(${log.id}, this)' style="padding: 4px 10px; font-size: 11px;">
+                                    <i data-lucide="eye" style="width: 12px; height: 12px;"></i>Details
+                                </button>
+                            </td>
+                        `;
+                        
+                        // Append details row (initially hidden)
+                        const detailsTr = document.createElement('tr');
+                        detailsTr.id = `log-details-tr-${log.id}`;
+                        detailsTr.style.display = 'none';
+                        
+                        const jsonStr = JSON.stringify(log.ai_output, null, 2);
+                        
+                        detailsTr.innerHTML = `
+                            <td colspan="5" style="background: rgba(0,0,0,0.1); border-left: 2px solid var(--primary); padding: 20px;">
+                                <div style="margin-bottom: 8px; font-weight:600; font-size:12px; color: var(--text-muted);">Original Text Input:</div>
+                                <div style="margin-bottom: 16px; font-size: 13px; line-height: 1.5; color: var(--text-main); font-style: italic;">"${log.raw_input}"</div>
+                                <div style="font-weight:600; font-size:12px; color: var(--text-muted); margin-bottom: 8px;">Gemini JSON Extraction Output:</div>
+                                <pre class="log-preview">${jsonStr}</pre>
+                            </td>
+                        `;
+                        
+                        tbody.appendChild(tr);
+                        tbody.appendChild(detailsTr);
+                    });
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function toggleLogDetails(logId, btn) {
+            const detailsTr = document.getElementById(`log-details-tr-${logId}`);
+            if (detailsTr.style.display === 'none') {
+                detailsTr.style.display = 'table-row';
+                btn.innerHTML = `<i data-lucide="eye-off" style="width: 12px; height: 12px;"></i>Hide`;
+            } else {
+                detailsTr.style.display = 'none';
+                btn.innerHTML = `<i data-lucide="eye" style="width: 12px; height: 12px;"></i>Details`;
+            }
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>

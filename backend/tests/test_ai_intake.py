@@ -217,3 +217,43 @@ class TestEmergencyAIIntakeEndpoint:
         )
         assert response.status_code == 503
         assert response.json()["fallback"] is True
+
+
+class TestAIIntakeLogEndpoint:
+
+    @pytest.mark.django_db
+    def test_list_logs_requires_auth(self, api_client):
+        response = api_client.get("/api/ai-logs/")
+        assert response.status_code == 401
+
+    @pytest.mark.django_db
+    def test_list_logs_success(self, auth_client):
+        client, user = auth_client
+        from ai_intake.models import AIIntakeLog
+        from requests_app.models import BloodRequest
+
+        req = BloodRequest.objects.create(
+            patient_name="Log Patient",
+            blood_group="O+",
+            city="Thrissur",
+            hospital="Hospital",
+            urgency="High"
+        )
+
+        AIIntakeLog.objects.create(
+            user=user,
+            raw_input="Need O+ blood urgently",
+            ai_output={"patient_name": "Log Patient"},
+            confidence_score=0.9,
+            blood_request=req
+        )
+
+        response = client.get("/api/ai-logs/")
+        assert response.status_code == 200
+        data = response.json()
+        
+        # DRF paginated or list response
+        logs = data.get("results", data)
+        assert len(logs) == 1
+        assert logs[0]["raw_input"] == "Need O+ blood urgently"
+        assert logs[0]["username"] == user.username
