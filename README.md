@@ -131,11 +131,11 @@ https://documenter.getpostman.com/view/55563067/2sBXwvH81i
 
 Production:
 
-https://lifelink-ai-production-51f6.up.railway.app/api/schema/swagger-ui/
+lifelink-ai-production-51f6.up.railway.app
 
 Staging:
 
-https://lifelink-ai-staging.up.railway.app/api/schema/swagger-ui/
+lifelink-ai-staging.up.railway.app
 
 ---
 
