@@ -1,5 +1,11 @@
 
 [![Django Tests](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml/badge.svg)](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml)
+[![Railway](https://img.shields.io/badge/Deploy-Railway-0B0D0E?style=for-the-badge&logo=railway)](https://railway.app)
+
+[![Swagger](https://img.shields.io/badge/API-Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io)
+
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
+
 # 🩸 LifeLink AI
 
 ### AI-Powered Blood Donor Matching & Emergency Response Platform
@@ -10,14 +16,13 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Gemini AI](https://img.shields.io/badge/Google-Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google)
 
-> **Connecting blood donors and recipients during emergencies — powered by Google Gemini AI.*
+> **Connecting blood donors and recipients during emergencies — powered by Google Gemini AI.**
 
 ---
 
 ## 🌟 Project Overview
 
-**LifeLink AI** is a full-stack emergency blood donor matching platform that combines **Google Gemini AI** with a robust **Django REST Framework** backend and a **React.js** frontend.
-
+**LifeLink AI** is an AI-powered Blood Donor Matching and Emergency Response Platform built using Django, **Django REST Framework**, **PostgreSQL**, and **Google Gemini AI**. The system provides an interactive web dashboard for coordinators along with REST APIs for donor and emergency request management.
 During emergencies, time is everything. Users describe a blood emergency in plain natural language — in **English or Malayalam** — and the system instantly extracts structured request details, matches compatible donors, and coordinates a response.
 
 ```
@@ -29,6 +34,19 @@ During emergencies, time is everything. Users describe a blood emergency in plai
 ```
 
 ---
+## 🚀 Live Demo
+
+### Production
+
+https://lifelink-ai-production-51f6.up.railway.app/
+
+### Staging
+
+https://lifelink-ai-staging.up.railway.app/
+
+### Swagger Documentation
+
+https://lifelink-ai-production-51f6.up.railway.app/api/schema/swagger-ui/
 
 ## ❗ Problem Statement
 
@@ -95,9 +113,9 @@ python manage.py runserver
 
 ---
 
-## 📄 API Documentation
+## 📚 Project Documentation
 
-Swagger UI: **http://127.0.0.1:8000/api/schema/swagger-ui/**
+Swagger UI: **https://lifelink-ai-production-51f6.up.railway.app/api/schema/swagger-ui/**
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
@@ -109,12 +127,6 @@ Swagger UI: **http://127.0.0.1:8000/api/schema/swagger-ui/**
 | `POST` | `/api/ai-intake/` | AI emergency parser | ✅ |
 | `GET` | `/api/ai-logs/` | View AI logs | ✅ |
 
----
-## 📚 Project Documentation
-
-### Swagger UI
-
-http://127.0.0.1:8000/api/schema/swagger-ui/
 
 ### MkDocs Site
 
@@ -143,7 +155,7 @@ lifelink-ai-staging.up.railway.app
 
 See detailed architecture:
 
-docs/architecture.md
+[docs/architecture.md](https://github.com/fathima-rinsha-k745/LifeLink-AI/blob/main/docs/architecture.md)
 
 ### Supported blood group compatibility
 
@@ -160,17 +172,17 @@ docs/architecture.md
 ## 📁 Project Structure
 
 ```
-LifeLink-AI/
-├── backend/
-│   ├── config/          # Django settings
-│   ├── authentication/  # JWT auth
-│   ├── donors/          # Donor management
-│   ├── blood_requests/  # Request management
-│   ├── ai_intake/       # Gemini AI integration
-│   └── requirements.txt
-├── .github/
-│   └── workflows/ci.yml
-└── README.md
+backend/
+│
+├── config/
+├── users/
+├── donors/
+├── requests_app/
+├── ai_intake/
+├── templates/
+├── static/
+└── requirements.txt
+
 ```
 
 ---
