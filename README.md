@@ -1,10 +1,5 @@
 
 [![Django Tests](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml/badge.svg)](https://github.com/fathima-rinsha-k745/LifeLink-AI/actions/workflows/django.yml)
-[![Railway](https://img.shields.io/badge/Deploy-Railway-0B0D0E?style=for-the-badge&logo=railway)](https://railway.app)
-
-[![Swagger](https://img.shields.io/badge/API-Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)](https://swagger.io)
-
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://postgresql.org)
 
 # 🩸 LifeLink AI
 
@@ -137,17 +132,6 @@ http://127.0.0.1:8000/
 ### Postman Collection
 
 https://documenter.getpostman.com/view/55563067/2sBXwvH81i
-
----
-## Live Deployments
-
-Production:
-
-lifelink-ai-production-51f6.up.railway.app
-
-Staging:
-
-lifelink-ai-staging.up.railway.app
 
 ---
 
