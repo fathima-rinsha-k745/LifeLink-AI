@@ -171,19 +171,24 @@ See detailed architecture:
 
 ## 📁 Project Structure
 
-```
-backend/
+LifeLink-AI/
 │
-├── config/
-├── users/
-├── donors/
-├── requests_app/
-├── ai_intake/
-├── templates/
-├── static/
+├── backend/
+│   ├── config/
+│   ├── users/
+│   ├── donors/
+│   ├── requests_app/
+│   ├── ai_intake/
+│   ├── templates/
+│   └── static/
+│
+├── docs/
+│
+├── .github/
+│
+├── README.md
+│
 └── requirements.txt
-
-```
 
 ---
 
