@@ -166,3 +166,40 @@ class AIIntakeLogListView(generics.ListAPIView):
     queryset = AIIntakeLog.objects.all().order_by("-created_at")
     serializer_class = AIIntakeLogSerializer
     permission_classes = [IsAuthenticated]
+
+
+class AIChatView(APIView):
+    """
+    Accepts user message, processes it using Gemini AI,
+    deciding dynamically to search for available donors if required.
+    """
+    permission_classes = [IsAuthenticated]
+
+    @method_decorator(
+        ratelimit(key='ip', rate='10/m', method='POST')
+    )
+    def post(self, request):
+        message = request.data.get("message", request.data.get("query", "")).strip()
+
+        if not message:
+            return Response(
+                {"error": "message or query field is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            from .services import run_ai_chat
+            response_text, tool_called = run_ai_chat(message)
+            return Response(
+                {
+                    "success": True,
+                    "response": response_text,
+                    "tool_called": tool_called
+                },
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"AI processing failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

@@ -109,3 +109,64 @@ def find_matched_donors(blood_request) -> list:
     )
 
     return donors[:10]
+
+
+def find_available_donors(blood_group: str = None, city: str = None) -> str:
+    """
+    Find available blood donors in the database.
+
+    Args:
+        blood_group: The blood group to filter by (e.g., 'A+', 'O-', 'B+'). Optional.
+        city: The city to filter by. Optional.
+    """
+    from donors.models import Donor
+    queryset = Donor.objects.filter(available=True)
+    if blood_group:
+        queryset = queryset.filter(blood_group__iexact=blood_group.strip())
+    if city:
+        queryset = queryset.filter(city__iexact=city.strip())
+
+    results = []
+    for d in queryset[:10]:
+        results.append({
+            "id": d.id,
+            "name": d.name,
+            "blood_group": d.blood_group,
+            "city": d.city,
+            "phone": d.phone,
+        })
+    return json.dumps(results)
+
+
+def run_ai_chat(message: str) -> tuple[str, bool]:
+    """
+    Runs Gemini Chat with automatic function calling enabled,
+    and returns (response_text, tool_called).
+    """
+    tool_called = False
+
+    def find_available_donors_tool(blood_group: str = None, city: str = None) -> str:
+        """
+        Find available blood donors in the database.
+
+        Args:
+            blood_group: The blood group to filter by (e.g., 'A+', 'O-', 'B+'). Optional.
+            city: The city to filter by. Optional.
+        """
+        nonlocal tool_called
+        tool_called = True
+        return find_available_donors(blood_group, city)
+
+    find_available_donors_tool.__name__ = "find_available_donors"
+
+    import google.generativeai as genai
+    genai.configure(api_key=settings.GEMINI_API_KEY)
+
+    model = genai.GenerativeModel(
+        "gemini-3-flash-preview",
+        tools=[find_available_donors_tool]
+    )
+    chat = model.start_chat(enable_automatic_function_calling=True)
+    response = chat.send_message(message)
+
+    return response.text, tool_called

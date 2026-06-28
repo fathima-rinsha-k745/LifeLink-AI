@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import EmergencyAIIntakeView, AIIntakeLogListView
+from .views import EmergencyAIIntakeView, AIIntakeLogListView, AIChatView
 
 urlpatterns = [
     path(
@@ -11,5 +11,10 @@ urlpatterns = [
         "ai-logs/",
         AIIntakeLogListView.as_view(),
         name="ai-logs"
+    ),
+    path(
+        "ai-chat/",
+        AIChatView.as_view(),
+        name="ai-chat"
     ),
 ]
