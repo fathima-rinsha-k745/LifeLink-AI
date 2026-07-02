@@ -34,10 +34,17 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".railway.app",
+    ".up.railway.app",
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "https://lifelink-ai-production-51f6.up.railway.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://lifelink-ai-production-51f6.up.railway.app",
+    "https://*.up.railway.app",
+    "https://*.railway.app",
 ]
 import os
 
@@ -177,6 +184,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 SPECTACULAR_SETTINGS = {
     "TITLE": "LifeLink AI API",
     "DESCRIPTION": "AI-powered Blood Donor Matching and Emergency Response Platform",
