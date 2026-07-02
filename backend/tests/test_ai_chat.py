@@ -43,10 +43,13 @@ class TestFindAvailableDonors:
 @pytest.mark.django_db
 class TestAIChatEndpoint:
 
-    def test_requires_authentication(self, db):
+    @patch("ai_intake.services.run_ai_chat")
+    def test_permits_unauthenticated(self, mock_run, db):
+        mock_run.return_value = ("Hello, I am the AI.", False, "", None)
         client = APIClient()
         response = client.post("/api/ai-chat/", {"message": "Hello"}, format="json")
-        assert response.status_code == 401
+        assert response.status_code == 200
+        assert response.json()["response"] == "Hello, I am the AI."
 
     def test_rejects_empty_message(self, auth_client):
         client, _ = auth_client
@@ -59,7 +62,7 @@ class TestAIChatEndpoint:
     @patch("ai_intake.services.run_ai_chat")
     def test_chat_success_tool_called(self, mock_run, auth_client):
         client, _ = auth_client
-        mock_run.return_value = ("Here is the list of O+ donors in Kozhikode...", True)
+        mock_run.return_value = ("Here is the list of O+ donors in Kozhikode...", True, "find_donors_tool", None)
 
         response = client.post("/api/ai-chat/", {"message": "Find O+ donors in Kozhikode"}, format="json")
         assert response.status_code == 200
@@ -72,7 +75,7 @@ class TestAIChatEndpoint:
     @patch("ai_intake.services.run_ai_chat")
     def test_chat_success_no_tool(self, mock_run, auth_client):
         client, _ = auth_client
-        mock_run.return_value = ("Paris is the capital of France.", False)
+        mock_run.return_value = ("Paris is the capital of France.", False, "", None)
 
         response = client.post("/api/ai-chat/", {"query": "What is the capital of France?"}, format="json")
         assert response.status_code == 200

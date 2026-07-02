@@ -43,6 +43,14 @@ import os
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+COORDINATOR_USERNAME = env('COORDINATOR_USERNAME', default='')
+COORDINATOR_PASSWORD = env('COORDINATOR_PASSWORD', default='')
+
+AUTHENTICATION_BACKENDS = [
+    'users.auth_backend.CoordinatorAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Application definition
 
 INSTALLED_APPS = [

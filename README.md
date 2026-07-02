@@ -98,11 +98,18 @@ cd LifeLink-AI/backend
 
 ### Backend setup
 
-```bash
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
-```
+1. Create a `.env` file in the `backend/` directory using the `.env.example` format (or edit the existing one).
+2. Define the Coordinator username and password environment variables:
+   ```env
+   COORDINATOR_USERNAME=fathima_rinsha_k
+   COORDINATOR_PASSWORD=rinsha98765k
+   ```
+3. Install dependencies and run server:
+   ```bash
+   pip install -r requirements.txt
+   python manage.py migrate
+   python manage.py runserver
+   ```
 
 > API available at **http://127.0.0.1:8000/**
 

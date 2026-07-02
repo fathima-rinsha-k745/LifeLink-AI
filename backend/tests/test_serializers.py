@@ -5,7 +5,10 @@ from users.serializers import RegisterSerializer
 def test_register_serializer_valid():
     data = {
         "username": "testuser",
-        "password": "testpass123"
+        "password": "testpass123",
+        "phone": "9876543210",
+        "blood_group": "O+",
+        "city": "Kozhikode"
     }
 
     serializer = RegisterSerializer(data=data)

@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-title: 'Outfit', sans-serif;
+
+  --color-brand-primary: #EF4444;
+  --color-brand-secondary: #F87171;
+  --color-brand-accent: #FCA5A5;
+  --color-brand-bg: #FFF7F7;
+  --color-brand-surface: #FFF7F7;
+  --color-brand-cards: #FFFFFF;
+  --color-brand-border: #FECACA;
+  --color-brand-text-primary: #111827;
+  --color-brand-text-secondary: #6B7280;
+  --color-brand-success: #22C55E;
+  --color-brand-warning: #F59E0B;
+  --color-brand-danger: #DC2626;
+
+  --shadow-premium: 0 20px 40px -15px rgba(239, 68, 68, 0.1);
+  --shadow-glow: 0 0 20px rgba(239, 68, 68, 0.15);
+  --shadow-glass: 0 8px 32px 0 rgba(239, 68, 68, 0.06);
+}
+
+@layer base {
+  body {
+    @apply font-sans bg-brand-bg text-brand-text-primary antialiased selection:bg-brand-secondary/20 selection:text-brand-primary overflow-x-hidden;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(239, 68, 68, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(252, 165, 165, 0.02) 0px, transparent 50%);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-title font-semibold tracking-tight;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-border/60 rounded-full hover:bg-brand-secondary/40 transition-colors;
+  }
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(10px) rotate(-1deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 7s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Shimmer styling */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(254, 202, 202, 0.1) 25%,
+    rgba(254, 202, 202, 0.3) 37%,
+    rgba(254, 202, 202, 0.1) 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer-anim 1.4s ease infinite;
+}
+
+@keyframes shimmer-anim {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+

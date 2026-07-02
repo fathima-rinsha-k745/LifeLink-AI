@@ -181,13 +181,24 @@ class TestEmergencyAIIntakeEndpoint:
         assert data["blood_request"]["blood_group"] == "O-"
         assert data["ai_confidence"] == 0.97
 
-    def test_requires_authentication(self, api_client):
+    @patch("ai_intake.views.parse_emergency_text")
+    @patch("requests_app.views.trigger_next_notification")
+    def test_permits_unauthenticated_requests(self, mock_trigger, mock_parse, api_client, db):
+        mock_parse.return_value = {
+            "patient_name": "Rajan",
+            "blood_group": "O-",
+            "hospital": "Thrissur Medical College",
+            "city": "Thrissur",
+            "urgency": "critical",
+            "confidence_score": 0.97
+        }
         response = api_client.post(
             "/api/requests/ai-intake/",
-            {"description": "Some emergency description here"},
+            {"description": "Patient Rajan needs O negative blood urgently at Thrissur Medical College. Surgery in 3 hours."},
             format="json"
         )
-        assert response.status_code == 401
+        assert response.status_code == 201
+        assert response.json()["success"] is True
 
     def test_rejects_empty_description(self, auth_client, db):
         client, _ = auth_client
@@ -227,8 +238,9 @@ class TestAIIntakeLogEndpoint:
         assert response.status_code == 401
 
     @pytest.mark.django_db
-    def test_list_logs_success(self, auth_client):
+    def test_list_logs_success(self, auth_client, settings):
         client, user = auth_client
+        settings.COORDINATOR_USERNAME = user.username
         from ai_intake.models import AIIntakeLog
         from requests_app.models import BloodRequest
 
