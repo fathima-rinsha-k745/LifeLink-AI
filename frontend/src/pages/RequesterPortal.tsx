@@ -290,6 +290,16 @@ export const RequesterPortal: React.FC = () => {
                     <span className="text-xs text-brand-text-secondary">Urgency</span>
                     <Badge variant="urgency" value={activeRequest.urgency} />
                   </div>
+
+                  <div className="pt-3.5 border-t border-brand-border mt-3 flex justify-center w-full">
+                    <a
+                      href="tel:9876543210"
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primary/90 transition-all shadow-sm shadow-brand-primary/20 cursor-pointer"
+                    >
+                      <Phone className="w-4 h-4 fill-white" />
+                      Call Emergency Contact
+                    </a>
+                  </div>
                 </div>
               </Card>
 

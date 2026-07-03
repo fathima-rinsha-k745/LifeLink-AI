@@ -17,16 +17,8 @@
 
 ## 🌟 Project Overview
 
-**LifeLink AI** is an AI-powered Blood Donor Matching and Emergency Response Platform built using Django, **Django REST Framework**, **PostgreSQL**, and **Google Gemini AI**. The system provides an interactive web dashboard for coordinators along with REST APIs for donor and emergency request management.
-During emergencies, time is everything. Users describe a blood emergency in plain natural language — in **English or Malayalam** — and the system instantly extracts structured request details, matches compatible donors, and coordinates a response.
+**LifeLink AI is an AI-powered Blood Donor Matching and Emergency Response Platform that connects patients, blood donors, and coordinators through an intelligent emergency response workflow. The platform supports three user roles: Requester, Donor, and Coordinator. Emergency requests can be submitted through voice or text, where Google Gemini AI extracts patient information, ranks compatible donors based on blood group, location, and availability, and automatically initiates the donor notification workflow. Coordinators can monitor requests, donors, AI logs, and interact with an AI assistant for system insights..
 
-```
-"We need O+ blood urgently for a patient at MIMS Hospital, Kozhikode. Contact: 9876543210."
-
-             ⬇ Gemini AI
-
-{ patient: "Arjun", blood_group: "O+", hospital: "MIMS Hospital", city: "Kozhikode" }
-```
 
 ---
 ## 🚀 Live Demo
@@ -53,20 +45,32 @@ LifeLink AI addresses this challenge by combining Artificial Intelligence, donor
 
 ## ✨ Features
 
-| Feature | Description |
-|---|---|
-| 🔐 **User Authentication** | Secure JWT-based registration and login |
-| 🩸 **Donor Management** | Register, update, and search donors by blood group |
-| 📋 **Blood Requests** | Create and manage emergency blood requests |
-| 🤖 **AI Emergency Intake** | Parse natural language into structured data |
-| 🧠 **Google Gemini AI** | Extracts name, blood group, hospital, urgency, contact |
-| 🎯 **Donor Matching** | Automatically finds compatible, available donors |
-| 📊 **AI Audit Logging** | Stores AI input, output, and confidence scores |
-| 📄 **Swagger Docs** | Full interactive API documentation |
+| Feature                            | Description                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| 🔐 Role-Based Authentication       | Separate access for Coordinator, Donor, and Requester                                |
+| 🎙 Voice & Text Emergency Requests | Users can describe emergencies using voice or text                                   |
+| 🤖 Gemini AI Emergency Intake      | AI extracts structured patient details automatically                                 |
+| 🎯 AI Donor Ranking                | AI ranks donors using blood group, city, and availability                            |
+| 🔔 AI Notification Workflow        | Automatically notifies the highest-ranked donor and proceeds to the next if declined |
+| 🩸 Donor Portal                    | Donors manage profiles, availability, and receive requests                           |
+| 🏥 Coordinator Dashboard           | Manage donors, requests, AI logs, and analytics                                      |
+| 💬 AI Assistants                   | Dedicated AI assistants for Requesters, Donors, and Coordinators                     |
+| 📊 AI Logs                         | Records AI prompts, responses, confidence scores, and actions                        |
+| 📄 Swagger API                     | Interactive REST API documentation                                                   |
 
 ---
 
 ## 🛠️ Tech Stack
+
+
+### 🎨 Frontend
+
+- **React** — Frontend library for building user interfaces.
+- **TypeScript** — Adds type safety to JavaScript.
+- **Tailwind CSS** — Utility-first CSS framework.
+- **Framer Motion** — Animation library for React.
+- **Vite** — Fast development and build tool.
+- **Axios** — HTTP client for API requests.
 
 ### Backend
 - **Python / Django** — Core language and web framework
@@ -186,20 +190,19 @@ LifeLink-AI/
 ## 🧪 Running Tests
 
 ```bash
+
 cd backend
-python manage.py test
-python manage.py test --verbosity=2
-```
+# Run all tests
+pytest
 
-### Coverage report
+# Verbose output
+pytest -v
 
-```bash
-pip install coverage
-coverage run manage.py test
+# Generate coverage report
+coverage run -m pytest
 coverage report
 coverage html
 ```
-
 ---
 ## 📸 Screenshots
 
@@ -227,7 +230,6 @@ coverage html
 - [ ] 🔔 **Real-time Notifications** — SMS/WhatsApp alerts via Twilio
 - [ ] 🗺️ **Geolocation Matching** — GPS-based proximity search
 - [ ] 🌐 **Multi-language Support** — Tamil, Hindi, and more
-- [ ] 📊 **Admin Dashboard** — Analytics for blood bank administrators
 - [ ] 🏥 **Hospital Portal** — Dedicated interface for hospital staff
 
 ---
