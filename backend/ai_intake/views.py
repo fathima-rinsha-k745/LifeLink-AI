@@ -266,33 +266,38 @@ class AIChatView(APIView):
             from .services import run_ai_chat
             chat_user = request.user if request.user.is_authenticated else None
             
+            intent_response = "GENERAL_QUESTION"
             if role == "requester":
-                import google.generativeai as genai
-                from django.conf import settings
-                genai.configure(api_key=settings.GEMINI_API_KEY)
-                intent_model = genai.GenerativeModel("gemini-2.5-flash-lite")
-                intent_prompt = (
-                    "You are an expert intent classifier. "
-                    "Classify if the following user message describes a real/emergency request to log or register a blood request "
-                    "(it should mention details like a patient/recipient name, blood group, or hospital where blood is needed), "
-                    "or if it is just a general question/query (like asking about donors, compatibility, general info, stats, or chatting).\n"
-                    "Respond with exactly 'BLOOD_REQUEST' if they are seeking to create/register/log a new blood request, "
-                    "or 'GENERAL_QUESTION' if they are asking a question or querying info.\n\n"
-                    f"Text: {message}"
-                )
-                
-                import time
-                max_retries = 3
-                for attempt in range(max_retries):
-                    try:
-                        intent_response = intent_model.generate_content(intent_prompt).text.strip()
-                        break
-                    except Exception as e:
-                        if "429" in str(e) and attempt < max_retries - 1:
-                            print(f"Intent rate limit exceeded, retrying in {2 ** attempt}s...")
-                            time.sleep(2 ** attempt)
-                        else:
-                            raise e
+                try:
+                    import google.generativeai as genai
+                    from django.conf import settings
+                    genai.configure(api_key=settings.GEMINI_API_KEY)
+                    intent_model = genai.GenerativeModel("gemini-2.5-flash-lite")
+                    intent_prompt = (
+                        "You are an expert intent classifier. "
+                        "Classify if the following user message describes a real/emergency request to log or register a blood request "
+                        "(it should mention details like a patient/recipient name, blood group, or hospital where blood is needed), "
+                        "or if it is just a general question/query (like asking about donors, compatibility, general info, stats, or chatting).\n"
+                        "Respond with exactly 'BLOOD_REQUEST' if they are seeking to create/register/log a new blood request, "
+                        "or 'GENERAL_QUESTION' if they are asking a question or querying info.\n\n"
+                        f"Text: {message}"
+                    )
+                    
+                    import time
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        try:
+                            intent_response = intent_model.generate_content(intent_prompt).text.strip()
+                            break
+                        except Exception as e:
+                            if "429" in str(e) and attempt < max_retries - 1:
+                                print(f"Intent rate limit exceeded, retrying in {2 ** attempt}s...")
+                                time.sleep(2 ** attempt)
+                            else:
+                                raise e
+                except Exception as e:
+                    print("Intent classification failed, falling back to general chat. Error:", e)
+                    intent_response = "GENERAL_QUESTION"
                 
                 if "BLOOD_REQUEST" in intent_response.upper():
                     mutable_data = request.data.copy()

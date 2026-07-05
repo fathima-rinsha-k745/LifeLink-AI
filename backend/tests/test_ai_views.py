@@ -416,5 +416,6 @@ class TestAIChatView:
             {"message": "Blood query", "role": "requester"},
             format="json"
         )
-        assert response.status_code == 500
-        assert "429 Rate limit exceeded" in response.json()["error"]
+        # Should gracefully fall back to general chat instead of crashing with 500
+        assert response.status_code == 200
+        assert response.json()["success"] is True
