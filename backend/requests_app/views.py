@@ -13,6 +13,9 @@ from users.permissions import IsCoordinator
 from donors.models import Donor
 from .models import BloodRequest, EmergencyNotification
 from .serializers import BloodRequestSerializer
+import urllib.request
+import urllib.parse
+import json
 
 class BloodRequestViewSet(viewsets.ModelViewSet):
     """
@@ -36,14 +39,47 @@ CITY_COORDINATES = {
     "kochi": (9.9312, 76.2673),
     "thrissur": (10.5276, 76.2144),
     "ernakulam": (9.9816, 76.2999),
+    "kottakkal": (10.9996, 75.9995),
+    "malappuram": (11.0733, 76.0740),
+    "kannur": (11.8745, 75.3704),
+    "kollam": (8.8932, 76.6141),
+    "palakkad": (10.7867, 76.6548),
+    "kottayam": (9.5916, 76.5222),
+    "alappuzha": (9.4981, 76.3388),
 }
+
+DYNAMIC_COORD_CACHE = {}
+
+def geocode_city(city_name):
+    city_key = str(city_name).lower().strip()
+    
+    if city_key in CITY_COORDINATES:
+        return CITY_COORDINATES[city_key]
+        
+    if city_key in DYNAMIC_COORD_CACHE:
+        return DYNAMIC_COORD_CACHE[city_key]
+        
+    try:
+        query = urllib.parse.quote(f"{city_name}, India")
+        url = f"https://nominatim.openstreetmap.org/search?q={query}&format=json&limit=1"
+        req = urllib.request.Request(url, headers={'User-Agent': 'LifeLink-AI/1.0'})
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            if data:
+                lat = float(data[0]['lat'])
+                lon = float(data[0]['lon'])
+                DYNAMIC_COORD_CACHE[city_key] = (lat, lon)
+                return (lat, lon)
+    except Exception as e:
+        print(f"Geocoding failed for {city_name}: {e}")
+        
+    return (8.5241, 76.9366)
 
 def get_coordinates(city_name, instance_id=0):
     """
     Resolves city names to coordinates with a stable random offset.
     """
-    city_key = str(city_name).lower().strip()
-    base_coords = CITY_COORDINATES.get(city_key, (8.5241, 76.9366)) # default Trivandrum
+    base_coords = geocode_city(city_name)
     
     # Stable random offset based on instance_id
     random.seed(instance_id)
@@ -114,9 +150,12 @@ def calculate_match_score(donor, request):
     elif dist < 10.0:
         dist_points = 20
         reasons.append(f"✓ Moderately close ({dist:.1f} km away)")
-    else:
+    elif donor.city.lower() == request.city.lower():
         dist_points = 10
         reasons.append(f"✓ In the same city ({dist:.1f} km away)")
+    else:
+        dist_points = 0
+        reasons.append(f"✓ Different city ({dist:.1f} km away)")
         
     # Reliability History score
     rel_points = int(donor.reliability_score * 0.20)
@@ -162,13 +201,19 @@ def trigger_next_notification(blood_request):
         city__iexact=blood_request.city
     ).exclude(id__in=notified_donor_ids)
     
+    if not available_donors.exists():
+        available_donors = Donor.objects.filter(
+            blood_group__in=compatible_groups,
+            available=True
+        ).exclude(city__iexact=blood_request.city).exclude(id__in=notified_donor_ids)
+    
     timestamp = timezone.now().strftime("%Y-%m-%d %H:%M:%S")
     
     if not available_donors.exists():
         blood_request.timeline.append({
             "status": "Completed",
             "timestamp": timestamp,
-            "message": "Notification queue depleted. No more compatible donors available in city."
+            "message": "Notification queue depleted. No more compatible donors available anywhere."
         })
         blood_request.status = 'Rejected'
         blood_request.save()
@@ -220,6 +265,31 @@ def match_donors(request, request_id):
     except BloodRequest.DoesNotExist:
         return Response({"error": "Blood request not found"}, status=404)
         
+    urgency_timeout_map = {
+        'Critical': 30,
+        'High': 60,
+        'Medium': 120,
+        'Low': 300,
+    }
+    timeout_seconds = urgency_timeout_map.get(blood_request.urgency, 120)
+    
+    pending_notifications = EmergencyNotification.objects.filter(
+        blood_request=blood_request, status='pending'
+    )
+    for notif in pending_notifications:
+        if (timezone.now() - notif.sent_at).total_seconds() > timeout_seconds:
+            notif.status = 'rejected'
+            notif.save()
+            blood_request.timeline.append({
+                "status": "Timeout",
+                "timestamp": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "message": f"No response from {notif.donor.name} within {timeout_seconds}s. Escalating to next donor."
+            })
+            blood_request.save()
+            trigger_next_notification(blood_request)
+            
+    blood_request.refresh_from_db()
+        
     COMPATIBILITY = {
         "O-": ["O-"],
         "O+": ["O-", "O+"],
@@ -231,38 +301,41 @@ def match_donors(request, request_id):
         "AB+": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
     }
     
-    compatible_groups = COMPATIBILITY.get(blood_request.blood_group, [])
-    compatible_donors = Donor.objects.filter(
-        blood_group__in=compatible_groups,
-        available=True,
-        city__iexact=blood_request.city
-    )
+    active_notif = EmergencyNotification.objects.filter(
+        blood_request=blood_request, status__in=['pending', 'accepted']
+    ).first()
     
     matches_list = []
-    for d in compatible_donors:
+    fallback_used = False
+    
+    if active_notif:
+        d = active_notif.donor
         score, reasons, dist = calculate_match_score(d, blood_request)
+        if d.city.lower() != blood_request.city.lower():
+            fallback_used = True
+            
         matches_list.append({
             "id": d.id,
             "name": d.name,
             "blood_group": d.blood_group,
             "city": d.city,
-            "phone": d.phone,
+            "phone": d.phone if active_notif.status == 'accepted' else None,
             "available": d.available,
             "distance": f"{dist:.1f} km",
             "compatibility_score": score,
             "why_donor": reasons,
-            "reliability": f"{d.reliability_score}%"
+            "reliability": f"{d.reliability_score}%",
+            "is_notified": active_notif.status == 'pending',
+            "status": active_notif.status
         })
-        
-    # Sort descending
-    matches_list.sort(key=lambda x: x["compatibility_score"], reverse=True)
     
     return Response({
         "request_id": blood_request.id,
         "patient_name": blood_request.patient_name,
         "status": blood_request.status,
         "timeline": blood_request.timeline,
-        "matches": matches_list
+        "matches": matches_list,
+        "fallback_used": fallback_used
     })
 
 @api_view(['GET'])
@@ -276,7 +349,7 @@ def pending_notification(request):
     except AttributeError:
         return Response({"notification": None})
         
-    notification = EmergencyNotification.objects.filter(donor=donor, status='pending').first()
+    notification = EmergencyNotification.objects.filter(donor=donor, status__in=['pending', 'accepted']).first()
     if not notification:
         return Response({"notification": None})
         
@@ -295,7 +368,9 @@ def pending_notification(request):
             "hospital": req.hospital,
             "city": req.city,
             "urgency": req.urgency,
-            "distance": f"{dist:.1f} km"
+            "distance": f"{dist:.1f} km",
+            "contact_phone": req.contact_phone if notification.status == 'accepted' else None,
+            "status": notification.status
         }
     })
 
@@ -328,6 +403,7 @@ def notification_history(request):
             "hospital": req.hospital,
             "city": req.city,
             "urgency": req.urgency,
+            "contact_phone": req.contact_phone if n.status == 'accepted' else None,
             "distance": f"{dist:.1f} km",
             "status": n.status,
             "sent_at": n.sent_at.strftime("%Y-%m-%d %H:%M:%S") if n.sent_at else None,

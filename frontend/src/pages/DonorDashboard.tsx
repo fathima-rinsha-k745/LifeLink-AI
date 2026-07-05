@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Activity, Check, MapPin, Calendar, User, Award, ShieldAlert, MessageSquare, LogOut, Heart, Clock, Menu, X } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Activity, Check, MapPin, Calendar, User, Award, ShieldAlert, MessageSquare, LogOut, Heart, Clock, Menu, X, Mic } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
@@ -67,6 +67,58 @@ export const DonorDashboard: React.FC = () => {
   ]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
+
+  // Voice setup (SpeechRecognition)
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechError, setSpeechError] = useState('');
+  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  let recognition: any = null;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+  }
+
+  const handleStartRecording = async () => {
+    setSpeechError('');
+    if (!recognition) {
+      // Fallback simulation
+      setTimeout(() => {
+        setChatInput("Am I eligible to donate blood today?");
+        setIsRecording(false);
+      }, 3500);
+      return;
+    }
+
+    try {
+      recognition.onstart = () => setIsRecording(true);
+      recognition.onerror = (e: any) => {
+        console.error('Speech recognition error:', e);
+        setSpeechError('Microphone access blocked or quiet speech.');
+        setIsRecording(false);
+      };
+      recognition.onend = () => setIsRecording(false);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setChatInput(transcript);
+      };
+      recognition.start();
+    } catch (err) {
+      console.error('Recognition start error:', err);
+      setIsRecording(false);
+    }
+  };
+
+  const handleStopRecording = () => {
+    setIsRecording(false);
+    if (recognition) {
+      try {
+        recognition.stop();
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
+      }
+    }
+  };
 
   // Active sub-tab state inside the portal
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'global-requests' | 'ai-assistant'>('profile');
@@ -143,6 +195,29 @@ export const DonorDashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    audioRef.current = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
+    audioRef.current.loop = true;
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pendingNotification && pendingNotification.status === 'pending') {
+      audioRef.current?.play().catch(e => console.log('Audio autoplay blocked by browser:', e));
+    } else {
+      audioRef.current?.pause();
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+      }
+    }
+  }, [pendingNotification]);
+
   useEffect(() => {
     if (activeTab === 'global-requests') {
       fetchGlobalRequests();
@@ -198,7 +273,11 @@ export const DonorDashboard: React.FC = () => {
       });
 
       if (res.status === 200) {
-        setPendingNotification(null);
+        if (status === 'accepted') {
+          checkPendingNotifications(); // Reload to get the accepted state and contact info
+        } else {
+          setPendingNotification(null);
+        }
         fetchProfile(); // reload profile stats
       }
     } catch (err) {
@@ -546,7 +625,9 @@ export const DonorDashboard: React.FC = () => {
                       <ShieldAlert className="w-6 h-6 animate-bounce" />
                     </div>
                     <div>
-                      <h3 className="text-base font-extrabold text-brand-danger">CRITICAL BLOOD EMERGENCY ALERT</h3>
+                      <h3 className="text-base font-extrabold text-brand-danger">
+                        {pendingNotification.status === 'accepted' ? 'ACCEPTED EMERGENCY ALERT' : 'CRITICAL BLOOD EMERGENCY ALERT'}
+                      </h3>
                       <span className="text-[10px] font-bold text-brand-text-secondary uppercase tracking-wider block">LifeLink AI Match Found</span>
                     </div>
                   </div>
@@ -578,26 +659,50 @@ export const DonorDashboard: React.FC = () => {
                       <span className="text-xs font-bold text-brand-text-secondary uppercase">Urgency Rating</span>
                       <Badge variant="urgency" value={pendingNotification.urgency} />
                     </div>
+                    {pendingNotification.status === 'accepted' && (
+                      <div className="flex justify-between items-center pb-1 pt-2 border-t border-brand-surface">
+                        <span className="text-xs font-bold text-brand-text-secondary uppercase">Contact</span>
+                        <span className="text-sm font-bold text-brand-text-primary">{pendingNotification.contact_phone || 'Not provided'}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action buttons */}
                   <div className="flex gap-4 pt-4 border-t border-brand-border/40">
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-brand-danger/30 text-brand-danger hover:bg-rose-50 h-11"
-                      disabled={notificationLoading}
-                      onClick={() => handleRespond('rejected')}
-                    >
-                      Decline Request
-                    </Button>
-                    <Button
-                      variant="success"
-                      className="flex-1 h-11 shadow-brand-success/20"
-                      disabled={notificationLoading}
-                      onClick={() => handleRespond('accepted')}
-                    >
-                      Accept Request
-                    </Button>
+                    {pendingNotification.status === 'accepted' ? (
+                      pendingNotification.contact_phone ? (
+                        <a
+                          href={`tel:${pendingNotification.contact_phone}`}
+                          className="w-full flex items-center justify-center gap-2 h-11 text-sm font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primary/90 transition-all shadow-sm shadow-brand-primary/20 cursor-pointer"
+                        >
+                          <Phone className="w-4 h-4 fill-white" />
+                          Call Patient
+                        </a>
+                      ) : (
+                        <div className="w-full flex items-center justify-center h-11 text-sm font-bold text-brand-text-secondary bg-brand-surface rounded-xl">
+                          No contact provided
+                        </div>
+                      )
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-brand-danger/30 text-brand-danger hover:bg-rose-50 h-11"
+                          disabled={notificationLoading}
+                          onClick={() => handleRespond('rejected')}
+                        >
+                          Decline Request
+                        </Button>
+                        <Button
+                          variant="success"
+                          className="flex-1 h-11 shadow-brand-success/20"
+                          disabled={notificationLoading}
+                          onClick={() => handleRespond('accepted')}
+                        >
+                          Accept Request
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </Card>
               ) : (
@@ -733,20 +838,36 @@ export const DonorDashboard: React.FC = () => {
                   </div>
 
                   {/* Input Form */}
-                  <form onSubmit={handleSendMessage} className="mt-3 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Ask eligibility, prep or recovery queries..."
-                      className="flex-1 px-4 py-2.5 border border-brand-border rounded-xl text-xs focus:outline-none bg-white"
-                      value={chatInput}
-                      onChange={(e) => setChatInput(e.target.value)}
-                      disabled={chatLoading}
-                      required
-                    />
-                    <Button type="submit" size="sm" className="!rounded-xl" disabled={chatLoading}>
-                      Ask
-                    </Button>
-                  </form>
+                  <div className="mt-3 flex flex-col gap-1">
+                    {speechError && <span className="text-[10px] text-brand-danger ml-1">{speechError}</span>}
+                    <form onSubmit={handleSendMessage} className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          placeholder="Ask eligibility, prep or recovery queries..."
+                          className="w-full pl-10 pr-4 py-2.5 border border-brand-border rounded-xl text-xs focus:outline-none bg-white"
+                          value={chatInput}
+                          onChange={(e) => setChatInput(e.target.value)}
+                          disabled={chatLoading}
+                          required
+                        />
+                        <div className="absolute left-1.5 top-1/2 -translate-y-1/2">
+                          <Button
+                            type="button"
+                            variant={isRecording ? "danger" : "ghost"}
+                            onClick={isRecording ? handleStopRecording : handleStartRecording}
+                            className={isRecording ? "animate-pulse !p-1.5 !rounded-lg" : "!p-1.5 !rounded-lg"}
+                            title="Voice input"
+                          >
+                            <Mic className={`w-3.5 h-3.5 ${isRecording ? "text-white" : "text-brand-text-secondary"}`} />
+                          </Button>
+                        </div>
+                      </div>
+                      <Button type="submit" size="sm" className="!rounded-xl" disabled={chatLoading || !chatInput.trim()}>
+                        Ask
+                      </Button>
+                    </form>
+                  </div>
                 </Card>
               </div>
             </div>

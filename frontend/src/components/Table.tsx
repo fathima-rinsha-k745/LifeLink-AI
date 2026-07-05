@@ -24,7 +24,7 @@ interface ThProps extends React.ThHTMLAttributes<HTMLTableCellElement> {}
 
 export const Th: React.FC<ThProps> = ({ children, className = '', ...props }) => {
   return (
-    <th className={`px-6 py-4 font-semibold text-xs text-brand-text-secondary uppercase tracking-wider border-b border-brand-border bg-brand-surface/40 ${className}`} {...props}>
+    <th className={`px-4 md:px-6 py-3 md:py-4 font-semibold text-xs text-brand-text-secondary uppercase tracking-wider border-b border-brand-border bg-brand-surface/40 ${className}`} {...props}>
       {children}
     </th>
   );
@@ -34,7 +34,7 @@ interface TdProps extends React.TdHTMLAttributes<HTMLTableCellElement> {}
 
 export const Td: React.FC<TdProps> = ({ children, className = '', ...props }) => {
   return (
-    <td className={`px-6 py-4 border-b border-brand-border font-medium text-brand-text-primary align-middle ${className}`} {...props}>
+    <td className={`px-4 md:px-6 py-3 md:py-4 border-b border-brand-border font-medium text-brand-text-primary align-middle ${className}`} {...props}>
       {children}
     </td>
   );

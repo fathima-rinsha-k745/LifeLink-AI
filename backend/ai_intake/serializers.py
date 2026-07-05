@@ -17,6 +17,7 @@ class AIIntakeSerializer(serializers.ModelSerializer):
             "hospital",
             "city",
             "urgency",
+            "contact_phone",
         ]
 
 

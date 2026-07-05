@@ -13,6 +13,11 @@ class DonorViewSet(viewsets.ModelViewSet):
     Provides CRUD operations
     for donor records.
     """
+    def paginate_queryset(self, queryset):
+        if self.request.query_params.get('nopage') == 'true':
+            return None
+        return super().paginate_queryset(queryset)
+
     queryset = Donor.objects.none()
     serializer_class = DonorSerializer
     filter_backends = [DjangoFilterBackend]

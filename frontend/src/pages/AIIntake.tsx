@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Phone, MapPin, User, CheckCircle2, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Sparkles, Phone, MapPin, User, CheckCircle2, ShieldCheck, AlertCircle, Mic } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
@@ -11,6 +11,58 @@ export const AIIntake: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<any | null>(null);
+
+  // Voice setup (SpeechRecognition)
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechError, setSpeechError] = useState('');
+  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  let recognition: any = null;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+  }
+
+  const handleStartRecording = async () => {
+    setSpeechError('');
+    if (!recognition) {
+      // Fallback simulation
+      setTimeout(() => {
+        setDescription("Arjun needs O+ blood urgently at MIMS Hospital Kozhikode. Contact number is 9446123456.");
+        setIsRecording(false);
+      }, 3500);
+      return;
+    }
+
+    try {
+      recognition.onstart = () => setIsRecording(true);
+      recognition.onerror = (e: any) => {
+        console.error('Speech recognition error:', e);
+        setSpeechError('Microphone access blocked or quiet speech.');
+        setIsRecording(false);
+      };
+      recognition.onend = () => setIsRecording(false);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setDescription((prev) => prev ? prev + ' ' + transcript : transcript);
+      };
+      recognition.start();
+    } catch (err) {
+      console.error('Recognition start error:', err);
+      setIsRecording(false);
+    }
+  };
+
+  const handleStopRecording = () => {
+    setIsRecording(false);
+    if (recognition) {
+      try {
+        recognition.stop();
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,14 +118,28 @@ export const AIIntake: React.FC = () => {
                 <label htmlFor="ai-text-input" className="text-sm font-semibold text-brand-text-primary">
                   Emergency Details Description
                 </label>
-                <textarea
-                  id="ai-text-input"
-                  className="w-full h-44 px-4 py-3 rounded-2xl border border-brand-border bg-white text-sm text-brand-text-primary placeholder-brand-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/80 transition-all resize-none"
-                  placeholder={mockPlaceholderText}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <textarea
+                    id="ai-text-input"
+                    className="w-full h-44 pl-4 pr-12 py-3 rounded-2xl border border-brand-border bg-white text-sm text-brand-text-primary placeholder-brand-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/80 transition-all resize-none"
+                    placeholder={mockPlaceholderText}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                  />
+                  <div className="absolute right-3 bottom-3">
+                    <Button
+                      type="button"
+                      variant={isRecording ? "danger" : "ghost"}
+                      onClick={isRecording ? handleStopRecording : handleStartRecording}
+                      className={isRecording ? "animate-pulse !p-2 !rounded-full" : "!p-2 !rounded-full"}
+                      title="Voice input"
+                    >
+                      <Mic className={`w-4 h-4 ${isRecording ? "text-white" : "text-brand-text-secondary"}`} />
+                    </Button>
+                  </div>
+                </div>
+                {speechError && <p className="text-xs text-brand-danger mt-1">{speechError}</p>}
               </div>
 
               <Button

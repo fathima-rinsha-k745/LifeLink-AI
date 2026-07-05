@@ -12,6 +12,7 @@ export const RequesterPortal: React.FC = () => {
   const [activeRequest, setActiveRequest] = useState<any>(null);
   const [matchedDonors, setMatchedDonors] = useState<any[]>([]);
   const [pollingActive, setPollingActive] = useState(false);
+  const [fallbackUsed, setFallbackUsed] = useState(false);
 
   // Voice setup (SpeechRecognition)
   const [isRecording, setIsRecording] = useState(false);
@@ -29,7 +30,7 @@ export const RequesterPortal: React.FC = () => {
     {
       id: 'r-welcome',
       sender: 'bot',
-      text: 'Hello! I am your LifeLink AI Assistant. You can ask me general questions about blood donation, or describe an emergency (e.g. "Patient Rajan needs 2 units of O negative blood at MIMS hospital Kozhikode urgently"). You can type or use voice.',
+      text: 'Hello! I am your LifeLink AI Assistant. You can ask me general questions about blood donation, or describe an emergency (e.g. "Patient Rajan needs O negative blood at MIMS hospital Kozhikode. Contact: +91 9876543210"). You can type or use voice.',
     },
   ]);
   const [assistantInput, setAssistantInput] = useState('');
@@ -43,7 +44,7 @@ export const RequesterPortal: React.FC = () => {
   // Fetch all donors initially for the manual table
   const fetchDonors = async () => {
     try {
-      const res = await apiClient.get('/donors/');
+      const res = await apiClient.get('/donors/?nopage=true');
       if (res.status === 200) {
         setAllDonors(res.data.results || res.data);
       }
@@ -68,6 +69,7 @@ export const RequesterPortal: React.FC = () => {
           timeline: res.data.timeline,
         }));
         setMatchedDonors(res.data.matches);
+        setFallbackUsed(res.data.fallback_used);
         
         // Stop polling if completed or rejected completely
         if (res.data.status === 'Completed' || res.data.status === 'Rejected') {
@@ -151,6 +153,7 @@ export const RequesterPortal: React.FC = () => {
           ]);
           setActiveRequest(data.blood_request);
           setMatchedDonors(data.matched_donors);
+          setFallbackUsed(data.fallback_used);
           setPollingActive(true);
         } else {
           setAssistantMessages((prev) => [
@@ -247,7 +250,7 @@ export const RequesterPortal: React.FC = () => {
               </Button>
               <input
                 type="text"
-                placeholder="Describe emergency or ask a question..."
+                placeholder="Describe emergency (include contact number) or ask a question..."
                 className="flex-1 px-4 py-2 border border-brand-border rounded-xl text-sm focus:outline-none bg-white"
                 value={assistantInput}
                 onChange={(e) => setAssistantInput(e.target.value)}
@@ -286,82 +289,109 @@ export const RequesterPortal: React.FC = () => {
                     <span className="text-xs text-brand-text-secondary">City</span>
                     <span className="text-xs font-bold text-brand-text-primary">{activeRequest.city}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between pb-1.5 border-b border-brand-border">
                     <span className="text-xs text-brand-text-secondary">Urgency</span>
                     <Badge variant="urgency" value={activeRequest.urgency} />
                   </div>
-
-                  <div className="pt-3.5 border-t border-brand-border mt-3 flex justify-center w-full">
-                    <a
-                      href="tel:9876543210"
-                      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primary/90 transition-all shadow-sm shadow-brand-primary/20 cursor-pointer"
-                    >
-                      <Phone className="w-4 h-4 fill-white" />
-                      Call Emergency Contact
-                    </a>
+                  <div className="flex justify-between">
+                    <span className="text-xs text-brand-text-secondary">Contact</span>
+                    <span className="text-xs font-bold text-brand-text-primary">{activeRequest.contact_phone || 'Not provided'}</span>
                   </div>
                 </div>
               </Card>
 
-              {/* Dynamic Match Timeline Card */}
-              <Card glass className="border-brand-primary/20 flex flex-col justify-between">
-                <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-extrabold text-brand-primary uppercase tracking-wider">Live Status</h4>
-                    <span className="text-[10px] bg-brand-surface border border-brand-border text-brand-primary px-2 py-0.5 rounded-full font-bold">
-                      {activeRequest.status === 'Completed' ? 'Success' : 'Active Routing'}
-                    </span>
-                  </div>
-                  
-                  {/* Timeline Points */}
-                  <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1">
-                    {activeRequest.timeline?.map((step: any, idx: number) => (
-                      <div key={idx} className="flex gap-3">
-                        <div className="flex flex-col items-center">
-                          <div className={`w-2.5 h-2.5 rounded-full ${
-                            step.status === 'Completed' || step.status === 'Accepted'
-                              ? 'bg-emerald-500 shadow-sm shadow-emerald-400'
-                              : step.status === 'Rejected'
-                              ? 'bg-rose-500'
-                              : 'bg-brand-primary animate-pulse'
-                          }`} />
-                          {idx !== activeRequest.timeline.length - 1 && (
-                            <div className="w-[1.5px] h-8 bg-brand-border mt-1" />
+              {matchedDonors.length > 0 ? (
+                <>
+                  {/* Matched Donors Ranking List */}
+                  <Card>
+                    <h4 className="text-sm font-extrabold text-brand-text-primary mb-2 uppercase tracking-wider">Top Donors</h4>
+                    {fallbackUsed && (
+                      <p className="text-xs text-amber-500 font-medium mb-4">No suitable donor is available in the requested city. Showing the nearest available donor.</p>
+                    )}
+                    <div className="grid grid-cols-1 gap-4">
+                      {matchedDonors.map((donor) => (
+                        <Card key={donor.id} glass className="border-brand-border relative p-3 flex flex-col justify-between">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold text-brand-text-secondary uppercase">Match</span>
+                                {donor.is_notified && (
+                                  <span className="text-[8px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider animate-pulse">
+                                    Notified
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-sm font-bold text-brand-text-primary mt-0.5">{donor.name}</h4>
+                            </div>
+                            <div className="flex flex-col items-end">
+                              <Badge variant="blood" value={donor.blood_group} />
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center mt-2 border-t border-brand-border/50 pt-2.5 mb-2.5">
+                            <span className="text-xs text-brand-text-secondary">
+                              {donor.city} {donor.distance ? `(${donor.distance})` : ''}
+                            </span>
+                            <span className="text-xs text-brand-success font-bold">{donor.compatibility_score ? `${donor.compatibility_score}% Score` : 'Matched'}</span>
+                          </div>
+                          {donor.phone ? (
+                            <a
+                              href={`tel:${donor.phone}`}
+                              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primary/90 transition-all shadow-sm shadow-brand-primary/20 cursor-pointer mt-auto"
+                            >
+                              <Phone className="w-3.5 h-3.5 fill-white" />
+                              Call {donor.phone || donor.name.split(' ')[0]}
+                            </a>
+                          ) : (
+                            <div className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-bold text-brand-text-secondary bg-brand-surface rounded-xl mt-auto">
+                              Contact hidden until accepted
+                            </div>
                           )}
-                        </div>
-                        <div className="flex-1 text-left -mt-1">
-                          <span className="text-[11px] font-bold text-brand-text-primary">{step.status}</span>
-                          <p className="text-[10px] text-brand-text-secondary mt-0.5">{step.message}</p>
-                          <span className="text-[8px] text-brand-text-secondary/70">{step.timestamp}</span>
-                        </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </Card>
+
+                  {/* Dynamic Match Timeline Card */}
+                  <Card glass className="border-brand-primary/20 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="text-sm font-extrabold text-brand-primary uppercase tracking-wider">Live Status</h4>
+                        <span className="text-[10px] bg-brand-surface border border-brand-border text-brand-primary px-2 py-0.5 rounded-full font-bold">
+                          {activeRequest.status === 'Completed' ? 'Success' : 'Active Routing'}
+                        </span>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </Card>
-              
-              {/* Matched Donors Ranking List */}
-              {matchedDonors.length > 0 && (
+                      
+                      {/* Timeline Points */}
+                      <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1">
+                        {activeRequest.timeline?.map((step: any, idx: number) => (
+                          <div key={idx} className="flex gap-3">
+                            <div className="flex flex-col items-center">
+                              <div className={`w-2.5 h-2.5 rounded-full ${
+                                step.status === 'Completed' || step.status === 'Accepted'
+                                  ? 'bg-emerald-500 shadow-sm shadow-emerald-400'
+                                  : step.status === 'Rejected'
+                                  ? 'bg-rose-500'
+                                  : 'bg-brand-primary animate-pulse'
+                              }`} />
+                              {idx !== activeRequest.timeline.length - 1 && (
+                                <div className="w-[1.5px] h-8 bg-brand-border mt-1" />
+                              )}
+                            </div>
+                            <div className="flex-1 text-left -mt-1">
+                              <span className="text-[11px] font-bold text-brand-text-primary">{step.status}</span>
+                              <p className="text-[10px] text-brand-text-secondary mt-0.5">{step.message}</p>
+                              <span className="text-[8px] text-brand-text-secondary/70">{step.timestamp}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </Card>
+                </>
+              ) : (
                 <Card>
-                  <h4 className="text-sm font-extrabold text-brand-text-primary mb-4 uppercase tracking-wider">Top Donors</h4>
-                  <div className="grid grid-cols-1 gap-4">
-                    {matchedDonors.map((donor) => (
-                      <Card key={donor.id} glass className="border-brand-border relative p-3 flex flex-col justify-between">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="text-[10px] font-bold text-brand-text-secondary uppercase">Match</span>
-                            <h4 className="text-sm font-bold text-brand-text-primary mt-0.5">{donor.name}</h4>
-                          </div>
-                          <div className="flex flex-col items-end">
-                            <Badge variant="blood" value={donor.blood_group} />
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center mt-2 border-t border-brand-border/50 pt-2.5">
-                          <span className="text-xs text-brand-text-secondary">{donor.distance}</span>
-                          <span className="text-xs text-brand-success font-bold">{donor.compatibility_score}% Score</span>
-                        </div>
-                      </Card>
-                    ))}
+                  <div className="p-4 text-center border border-dashed border-brand-border rounded-xl text-brand-text-secondary text-sm">
+                    {pollingActive ? 'Searching for compatible donors...' : 'No matching donors available.'}
                   </div>
                 </Card>
               )}

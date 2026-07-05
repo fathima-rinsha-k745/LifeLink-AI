@@ -423,18 +423,7 @@ def run_ai_chat(message: str, role: str = "coordinator", user = None) -> tuple[s
     genai.configure(api_key=settings.GEMINI_API_KEY)
 
     try:
-        available_models = [m.name for m in genai.list_models() if "generateContent" in m.supported_generation_methods]
-        target_model = "gemini-flash-latest"
-        for m in available_models:
-            if "gemini-flash-latest" in m:
-                target_model = m
-                break
-            elif "gemini-2.5-flash" in m:
-                target_model = m
-                break
-            elif "gemini-2.0-flash" in m:
-                target_model = m
-                break
+        target_model = "gemini-2.5-flash-lite"
 
         model = genai.GenerativeModel(
             target_model,

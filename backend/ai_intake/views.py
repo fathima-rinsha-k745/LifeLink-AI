@@ -13,6 +13,7 @@ from .models import AIIntakeLog
 from drf_spectacular.utils import extend_schema
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
+import traceback
 
 
 class EmergencyAIIntakeView(APIView):
@@ -80,21 +81,14 @@ class EmergencyAIIntakeView(APIView):
 
         # Normalize blood group
         blood_map = {
-            "O negative": "O-",
-            "O positive": "O+",
-            "A negative": "A-",
-            "A positive": "A+",
-            "B negative": "B-",
-            "B positive": "B+",
-            "AB negative": "AB-",
-            "AB positive": "AB+",
+            "o negative": "O-", "o positive": "O+", "a negative": "A-", "a positive": "A+",
+            "b negative": "B-", "b positive": "B+", "ab negative": "AB-", "ab positive": "AB+",
+            "o-": "O-", "o+": "O+", "a-": "A-", "a+": "A+", "b-": "B-", "b+": "B+", "ab-": "AB-", "ab+": "AB+"
         }
 
         if ai_result.get("blood_group"):
-            ai_result["blood_group"] = blood_map.get(
-                ai_result["blood_group"],
-                ai_result["blood_group"]
-            )
+            bg_input = str(ai_result["blood_group"]).lower().strip()
+            ai_result["blood_group"] = blood_map.get(bg_input, ai_result["blood_group"].strip().upper())
 
         # Normalize urgency
         urgency_map = {
@@ -106,11 +100,14 @@ class EmergencyAIIntakeView(APIView):
             "low": "Low",
         }
 
-        if ai_result.get("urgency"):
+        raw_urgency = ai_result.get("urgency")
+        if raw_urgency:
             ai_result["urgency"] = urgency_map.get(
-                ai_result["urgency"].lower(),
+                str(raw_urgency).lower(),
                 "Medium"
             )
+        else:
+            ai_result["urgency"] = "Medium"
 
         # Keep only fields that exist in BloodRequest
         request_data = {
@@ -119,6 +116,7 @@ class EmergencyAIIntakeView(APIView):
             "hospital": ai_result.get("hospital"),
             "city": ai_result.get("city"),
             "urgency": ai_result.get("urgency"),
+            "contact_phone": ai_result.get("contact_phone"),
         }
 
         serializer = AIIntakeSerializer(data=request_data)
@@ -189,28 +187,32 @@ class EmergencyAIIntakeView(APIView):
         }
         compatible_groups = COMPATIBILITY.get(blood_request.blood_group, [])
         from donors.models import Donor
-        compatible_donors = Donor.objects.filter(
-            blood_group__in=compatible_groups,
-            available=True,
-            city__iexact=blood_request.city
-        )
+        from requests_app.models import EmergencyNotification
+        notif = EmergencyNotification.objects.filter(blood_request=blood_request, status__in=['pending', 'accepted']).first()
         
         matched_donors = []
-        for d in compatible_donors:
+        fallback_used = False
+        
+        if notif:
+            d = notif.donor
             score, reasons, dist = calculate_match_score(d, blood_request)
+            if d.city.lower() != blood_request.city.lower():
+                fallback_used = True
+                
             matched_donors.append({
                 "id": d.id,
                 "name": d.name,
                 "blood_group": d.blood_group,
                 "city": d.city,
-                "phone": d.phone,
+                "phone": d.phone if notif.status == 'accepted' else None,
                 "available": d.available,
                 "distance": f"{dist:.1f} km",
                 "compatibility_score": score,
                 "why_donor": reasons,
-                "reliability": f"{d.reliability_score}%"
+                "reliability": f"{d.reliability_score}%",
+                "is_notified": notif.status == 'pending',
+                "status": notif.status
             })
-        matched_donors.sort(key=lambda x: x["compatibility_score"], reverse=True)
 
         return Response(
             {
@@ -224,6 +226,7 @@ class EmergencyAIIntakeView(APIView):
                 },
                 "matched_donors": matched_donors[:10],
                 "donors_found": len(matched_donors),
+                "fallback_used": fallback_used,
                 "ai_confidence": ai_result.get("confidence_score", 0),
             },
             status=status.HTTP_201_CREATED,
@@ -267,7 +270,7 @@ class AIChatView(APIView):
                 import google.generativeai as genai
                 from django.conf import settings
                 genai.configure(api_key=settings.GEMINI_API_KEY)
-                intent_model = genai.GenerativeModel("gemini-flash-latest")
+                intent_model = genai.GenerativeModel("gemini-2.5-flash-lite")
                 intent_prompt = (
                     "You are an expert intent classifier. "
                     "Classify if the following user message describes a real/emergency request to log or register a blood request "
@@ -277,7 +280,19 @@ class AIChatView(APIView):
                     "or 'GENERAL_QUESTION' if they are asking a question or querying info.\n\n"
                     f"Text: {message}"
                 )
-                intent_response = intent_model.generate_content(intent_prompt).text.strip()
+                
+                import time
+                max_retries = 3
+                for attempt in range(max_retries):
+                    try:
+                        intent_response = intent_model.generate_content(intent_prompt).text.strip()
+                        break
+                    except Exception as e:
+                        if "429" in str(e) and attempt < max_retries - 1:
+                            print(f"Intent rate limit exceeded, retrying in {2 ** attempt}s...")
+                            time.sleep(2 ** attempt)
+                        else:
+                            raise e
                 
                 if "BLOOD_REQUEST" in intent_response.upper():
                     mutable_data = request.data.copy()
@@ -325,28 +340,32 @@ class AIChatView(APIView):
                     }
                     compatible_groups = COMPATIBILITY.get(blood_request.blood_group, [])
                     from donors.models import Donor
-                    compatible_donors = Donor.objects.filter(
-                        blood_group__in=compatible_groups,
-                        available=True,
-                        city__iexact=blood_request.city
-                    )
+                    from requests_app.models import EmergencyNotification
+                    notif = EmergencyNotification.objects.filter(blood_request=blood_request, status__in=['pending', 'accepted']).first()
                     
                     matched_donors = []
-                    for d in compatible_donors:
+                    fallback_used = False
+                    
+                    if notif:
+                        d = notif.donor
                         score, reasons, dist = calculate_match_score(d, blood_request)
+                        if d.city.lower() != blood_request.city.lower():
+                            fallback_used = True
+                            
                         matched_donors.append({
                             "id": d.id,
                             "name": d.name,
                             "blood_group": d.blood_group,
                             "city": d.city,
-                            "phone": d.phone,
+                            "phone": d.phone if notif.status == 'accepted' else None,
                             "available": d.available,
                             "distance": f"{dist:.1f} km",
                             "compatibility_score": score,
                             "why_donor": reasons,
-                            "reliability": f"{d.reliability_score}%"
+                            "reliability": f"{d.reliability_score}%",
+                            "is_notified": notif.status == 'pending',
+                            "status": notif.status
                         })
-                    matched_donors.sort(key=lambda x: x["compatibility_score"], reverse=True)
                     
                     return Response(
                         {
@@ -362,7 +381,8 @@ class AIChatView(APIView):
                                 "status": blood_request.status
                             },
                             "matched_donors": matched_donors[:10],
-                            "donors_found": len(matched_donors)
+                            "donors_found": len(matched_donors),
+                            "fallback_used": fallback_used
                         },
                         status=status.HTTP_201_CREATED
                     )
@@ -378,8 +398,17 @@ class AIChatView(APIView):
                 },
                 status=status.HTTP_200_OK
             )
+
+        
+
         except Exception as e:
-            return Response(
-                {"error": f"AI processing failed: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+         traceback.print_exc()
+        print("ERROR:", repr(e))
+
+        return Response(
+        {
+            "error": str(e),
+            "type": type(e).__name__
+        },
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+    )

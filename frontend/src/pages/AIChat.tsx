@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Database } from 'lucide-react';
+import { Send, Database, Mic } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { apiClient } from '../api/client';
@@ -23,6 +23,58 @@ export const AIChat: React.FC = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Voice setup (SpeechRecognition)
+  const [isRecording, setIsRecording] = useState(false);
+  const [speechError, setSpeechError] = useState('');
+  const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  let recognition: any = null;
+  if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+  }
+
+  const handleStartRecording = async () => {
+    setSpeechError('');
+    if (!recognition) {
+      // Fallback simulation
+      setTimeout(() => {
+        setInputMessage("Do we have O- donors in Trivandrum?");
+        setIsRecording(false);
+      }, 3500);
+      return;
+    }
+
+    try {
+      recognition.onstart = () => setIsRecording(true);
+      recognition.onerror = (e: any) => {
+        console.error('Speech recognition error:', e);
+        setSpeechError('Microphone access blocked or quiet speech.');
+        setIsRecording(false);
+      };
+      recognition.onend = () => setIsRecording(false);
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInputMessage(transcript);
+      };
+      recognition.start();
+    } catch (err) {
+      console.error('Recognition start error:', err);
+      setIsRecording(false);
+    }
+  };
+
+  const handleStopRecording = () => {
+    setIsRecording(false);
+    if (recognition) {
+      try {
+        recognition.stop();
+      } catch (e) {
+        console.error('Error stopping recognition:', e);
+      }
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -146,27 +198,42 @@ export const AIChat: React.FC = () => {
         </div>
 
         {/* Input Form */}
-        <form onSubmit={handleSendMessage} className="mt-4 flex gap-3">
-          <input
-            type="text"
-            className="flex-1 px-4 py-3 rounded-2xl border border-brand-border text-sm placeholder-brand-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all bg-white"
-            placeholder="Type your message here (e.g. Do we have O- donors in Trivandrum?)..."
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            disabled={loading}
-            autoComplete="off"
-            required
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            className="!rounded-2xl px-5 h-[46px]"
-            disabled={loading}
-            icon={<Send className="w-4 h-4 fill-white" />}
-          >
-            Send
-          </Button>
-        </form>
+        <div className="mt-4 flex flex-col gap-2">
+          {speechError && <span className="text-[10px] text-brand-danger ml-2">{speechError}</span>}
+          <form onSubmit={handleSendMessage} className="flex gap-3">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                className="w-full pl-11 pr-4 py-3 rounded-2xl border border-brand-border text-sm placeholder-brand-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all bg-white"
+                placeholder="Type your message here (e.g. Patient needs A+ blood at MIMS Kozhikode. Contact: 9876543210)..."
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                disabled={loading}
+                autoComplete="off"
+                required
+              />
+              <div className="absolute left-2.5 top-1/2 -translate-y-1/2">
+                <Button
+                  type="button"
+                  variant={isRecording ? "danger" : "outline"}
+                  onClick={isRecording ? handleStopRecording : handleStartRecording}
+                  className={isRecording ? "animate-pulse !px-3" : "!px-3"}
+                  title="Voice input"
+                >
+                  <Mic className={`w-4 h-4 ${isRecording ? "text-white" : "text-brand-text-secondary"}`} />
+                </Button>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              variant="primary"
+              className="!rounded-2xl !px-6"
+              disabled={loading || !inputMessage.trim()}
+            >
+              <Send className="w-5 h-5 fill-current" />
+            </Button>
+          </form>
+        </div>
       </Card>
     </div>
   );

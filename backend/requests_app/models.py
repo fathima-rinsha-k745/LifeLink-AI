@@ -23,6 +23,7 @@ class BloodRequest(models.Model):
     hospital = models.CharField(max_length=150)
     city = models.CharField(max_length=100)
     urgency = models.CharField(max_length=20, choices=URGENCY_CHOICES)
+    contact_phone = models.CharField(max_length=20, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     # Extended Fields for AI Routing & Proximity

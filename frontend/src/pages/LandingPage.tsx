@@ -251,7 +251,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
       </section>
 
       {/* 2. PLATFORM METRICS */}
-      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 w-full">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 w-full">
         <Card glass className="text-center !p-6 border-brand-border/60">
           <p className="text-3xl font-extrabold text-brand-primary font-title">
             <AnimatedMetric value={1250} suffix="+" />
