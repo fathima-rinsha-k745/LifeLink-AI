@@ -402,13 +402,12 @@ class AIChatView(APIView):
         
 
         except Exception as e:
-         traceback.print_exc()
-        print("ERROR:", repr(e))
-
-        return Response(
-        {
-            "error": str(e),
-            "type": type(e).__name__
-        },
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-    )
+            traceback.print_exc()
+            print("ERROR:", repr(e))
+            return Response(
+                {
+                    "error": str(e),
+                    "type": type(e).__name__
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
