@@ -211,7 +211,6 @@ cd LifeLink-AI/backend
    python manage.py runserver
    ```
 
-> API available at **http://127.0.0.1:8000/**
 
 ### 3. Frontend Setup
 
