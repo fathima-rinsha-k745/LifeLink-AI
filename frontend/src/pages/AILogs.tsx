@@ -21,11 +21,15 @@ export const AILogs: React.FC = () => {
   const [expandedLogId, setExpandedLogId] = useState<number | null>(null);
   const [filterConfidence, setFilterConfidence] = useState<'all' | 'high' | 'low'>('all');
 
-  const loadLogs = async (url: string = '/ai-logs/') => {
+  const loadLogs = async (url: string = '/ai-logs/', isNewFilter: boolean = false) => {
     setLoading(true);
     setError('');
     try {
-      const response = await apiClient.get(url);
+      let finalUrl = url;
+      if (isNewFilter) {
+        finalUrl = `/ai-logs/?search=${encodeURIComponent(searchQuery)}&confidence=${filterConfidence}`;
+      }
+      const response = await apiClient.get(finalUrl);
       const data = response.data;
 
       if (data.results) {
@@ -49,8 +53,12 @@ export const AILogs: React.FC = () => {
   };
 
   useEffect(() => {
-    loadLogs();
-  }, []);
+    const delayDebounceFn = setTimeout(() => {
+      loadLogs('/ai-logs/', true);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, filterConfidence]);
 
   const formatDateTime = (dateStr: string) => {
     try {
@@ -73,31 +81,16 @@ export const AILogs: React.FC = () => {
     }
   };
 
-  // Search and filter logs client-side
-  const processedLogs = logs.filter((log) => {
-    const rawInput = (log.raw_input || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
-    const score = Math.round(log.confidence_score * 100);
-
-    const matchesSearch = rawInput.includes(query);
-    
-    let matchesConfidence = true;
-    if (filterConfidence === 'high') {
-      matchesConfidence = score >= 80;
-    } else if (filterConfidence === 'low') {
-      matchesConfidence = score < 80;
-    }
-
-    return matchesSearch && matchesConfidence;
-  });
+  // Pagination handlers
+  // Pagination handlers removed because pagination uses inline onClick hooks
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-8">
       {/* Title */}
       <div>
-        <h2 className="text-2xl md:text-3xl font-bold text-brand-text-primary">AI Intake Audit Trail</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-brand-text-primary">AI Interaction Logs</h2>
         <p className="text-sm text-brand-text-secondary">
-          Track raw text ingestion inputs, model predictions, and Gemini AI parsing outputs.
+          Track user queries, AI responses, confidence scores, and processing history.
         </p>
       </div>
 
@@ -144,15 +137,17 @@ export const AILogs: React.FC = () => {
       ) : (
         <div className="space-y-6">
           <div className="space-y-4 text-left">
-            {processedLogs.length === 0 ? (
+            {logs.length === 0 ? (
               <Card className="text-center text-brand-text-secondary py-12">
                 No AI intake logs recorded matching criteria
               </Card>
             ) : (
-              processedLogs.map((log) => {
-                const score = Math.round(log.confidence_score * 100);
+              logs.map((log) => {
                 const isExpanded = expandedLogId === log.id;
-                const isHighConfidence = score >= 80;
+                const isGeneral = log.confidence_score === null;
+                const scoreValue = isGeneral ? 0 : Math.round(log.confidence_score * 100);
+                const scoreDisplay = isGeneral ? 'N/A' : `${scoreValue}%`;
+                const isHighConfidence = isGeneral || scoreValue >= 80;
 
                 return (
                   <Card
@@ -200,7 +195,7 @@ export const AILogs: React.FC = () => {
                           <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                             isHighConfidence ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-amber-50 text-amber-700 border border-amber-100'
                           }`}>
-                            {score}%
+                            {scoreDisplay}
                           </span>
                         </div>
                         <Button
@@ -250,15 +245,30 @@ export const AILogs: React.FC = () => {
                               </pre>
                             </div>
 
-                            {/* AI Response details */}
-                            <div className="space-y-1.5">
-                              <span className="text-xs font-bold text-brand-text-secondary block">
-                                AI Assistant Response
-                              </span>
-                              <p className="p-4 rounded-xl border border-brand-primary/20 bg-brand-primary/5 text-sm text-brand-text-primary leading-relaxed whitespace-pre-wrap">
-                                {log.response_content || 'No response generated.'}
-                              </p>
-                            </div>
+                            {/* AI General Response Details */}
+                            {log.ai_response && (
+                              <div className="space-y-1.5">
+                                <span className="text-xs font-bold text-brand-text-secondary block">
+                                  AI Chat Response
+                                </span>
+                                <p className="p-4 rounded-xl border border-brand-border/60 bg-blue-50/50 text-sm text-brand-text-primary leading-relaxed shadow-sm">
+                                  {log.ai_response}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Additional Tools Info */}
+                            {log.function_called && (
+                              <div className="space-y-1.5 pt-2">
+                                <span className="text-xs font-bold text-brand-text-secondary block">
+                                  Function Triggered
+                                </span>
+                                <span className="px-2 py-1 bg-brand-surface border border-brand-border rounded-md text-xs font-mono text-brand-primary">
+                                  {log.function_called}
+                                </span>
+                              </div>
+                            )}
+
                           </div>
                         </motion.div>
                       )}
@@ -272,7 +282,7 @@ export const AILogs: React.FC = () => {
           {/* Pagination */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2 border-t border-brand-border/60">
             <span className="text-xs font-semibold text-brand-text-secondary">
-              Showing {processedLogs.length} logs (Total: {count})
+              Showing {logs.length} logs (Total: {count})
             </span>
             <div className="flex items-center gap-2">
               <Button

@@ -200,10 +200,6 @@ cd LifeLink-AI/backend
 
 1. Create a `.env` file in the `backend/` directory using the `.env.example` format (or edit the existing one).
 2. Define the Coordinator username and password environment variables:
-   ```env
-   COORDINATOR_USERNAME=fathima_rinsha_k
-   COORDINATOR_PASSWORD=rinsha98765k
-   ```
 3. Install dependencies and run the server:
    ```bash
    pip install -r requirements.txt
@@ -323,12 +319,48 @@ coverage html
 ![MkDocs Overview](docs/images/mkdocs-overview.png)
 
 ### Test Coverage Report
-![coverage report](docs/images/coverage-report.png)
+![coverage report](docs/images/coverage_report.png)
 
 ### UptimeRobot Monitoring
 ![UptimeRobot](docs/images/uptimerobot.png)
 
 ---
+## 📸 System Screenshots
+
+## Landing Page
+![Landing Page](docs/images/landing-page.png)
+
+### Request portal
+![ Request portal](docs/images/request-portal.png)
+
+### Live status
+![Live status](docs/images/live_status.png)
+
+### Donor registration
+![Donor registration](docs/images/donor_registration.png)
+
+### Donor's profile
+![Donor profile](docs/images/donor_profile.png)
+
+### Emergency alerts for Donors
+![emergency alerts](docs/images/donor-dashboard.png)
+
+### Donor AI assistant
+![donor ai assistant](docs/images/donor_ai_chat.png)
+
+### Coordinator login
+![coordinator login](docs/images/coordinator_login.png)
+
+### Coordinator dashboard
+![coordinator dashboard](docs/images/coordinator_dashbord.png)
+
+### Coordinator's AI assistant
+![Coordinator's AI assistant](docs/images/coordinator_ai_assistant.png)
+
+### Ai Logs
+![AI logs](docs/images/Ai_logs.png)
+
+
 
 ## 🤖 AI Capabilities
 

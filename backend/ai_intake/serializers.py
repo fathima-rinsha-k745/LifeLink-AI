@@ -36,4 +36,7 @@ class AIIntakeLogSerializer(serializers.ModelSerializer):
             "confidence_score",
             "blood_request",
             "created_at",
+            "ai_response",
+            "function_called",
+            "tool_used",
         ]

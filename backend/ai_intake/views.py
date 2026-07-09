@@ -237,9 +237,23 @@ class AIIntakeLogListView(generics.ListAPIView):
     """
     Lists historical AI intake logs.
     """
-    queryset = AIIntakeLog.objects.all().order_by("-created_at")
     serializer_class = AIIntakeLogSerializer
     permission_classes = [IsCoordinator]
+
+    def get_queryset(self):
+        queryset = AIIntakeLog.objects.all().order_by("-created_at")
+        
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(raw_input__icontains=search)
+            
+        confidence = self.request.query_params.get('confidence', None)
+        if confidence == 'high':
+            queryset = queryset.filter(confidence_score__gte=0.8)
+        elif confidence == 'low':
+            queryset = queryset.filter(confidence_score__lt=0.8)
+            
+        return queryset
 
 
 class AIChatView(APIView):

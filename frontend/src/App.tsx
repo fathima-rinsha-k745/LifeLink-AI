@@ -137,7 +137,7 @@ export const App: React.FC = () => {
       case 'requests':
         return 'Emergency Requests List';
       case 'logs':
-        return 'Gemini Extraction Logs';
+        return 'AI  Activity Logs';
       case 'ai-chat':
         return 'AI Chat Assistant';
       case 'donor-dashboard':
