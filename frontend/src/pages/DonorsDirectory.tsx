@@ -42,6 +42,9 @@ export const DonorsDirectory: React.FC = () => {
         if (selectedGroup) {
           params.append('blood_group', selectedGroup);
         }
+        if (searchQuery) {
+          params.append('search', searchQuery);
+        }
         const queryString = params.toString();
         if (queryString) {
           targetUrl = `/donors/?${queryString}`;
@@ -73,8 +76,12 @@ export const DonorsDirectory: React.FC = () => {
   };
 
   useEffect(() => {
-    loadDonors();
-  }, [selectedGroup]);
+    const delayDebounceFn = setTimeout(() => {
+      loadDonors('/donors/');
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, selectedGroup]);
 
   // Add donor submit handler
   const handleAddDonorSubmit = async (e: React.FormEvent) => {
@@ -107,12 +114,8 @@ export const DonorsDirectory: React.FC = () => {
   };
 
   // Filter donor list locally for text matching name or city
-  const filteredDonors = donors.filter((donor) => {
-    const matchesSearch =
-      donor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      donor.city.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
-  });
+  // (Removed local filtering since we now perform backend-level search)
+  const filteredDonors = donors;
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 md:px-8">

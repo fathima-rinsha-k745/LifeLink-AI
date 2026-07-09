@@ -35,57 +35,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onFindMatches 
     setLoading(true);
     setError('');
     try {
-      const [donorsRes, requestsRes] = await Promise.all([
-        apiClient.get('/donors/'),
+      const [statsRes, requestsRes] = await Promise.all([
+        apiClient.get('/dashboard/stats/'),
         apiClient.get('/requests/'),
       ]);
 
-      const donors = donorsRes.data.results || donorsRes.data;
       const requests = requestsRes.data.results || requestsRes.data;
 
-      const totalDonors = donors.length;
-      const availableDonors = donors.filter((d: any) => d.available).length;
-      const totalRequests = requests.length;
-      
-      // Calculate today's requests
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayRequests = requests.filter((r: any) => r.created_at && r.created_at.startsWith(todayStr)).length;
-
-      // Extract stats from timelines
-      let notificationsSentCount = 0;
-      let rejectedCount = 0;
-      let completedCount = 0;
-
-      requests.forEach((r: any) => {
-        if (r.status === 'completed') completedCount++;
-        if (r.timeline) {
-          r.timeline.forEach((step: any) => {
-            if (step.status === 'Notification Sent') notificationsSentCount++;
-            if (step.status === 'Rejected') rejectedCount++;
-          });
-        }
-      });
-
-      const matchRatio = totalRequests > 0 ? `${Math.round((completedCount / totalRequests) * 100)}%` : '100%';
-      const notificationsSent = notificationsSentCount + 42; // add historical baseline
-      const acceptedDonors = completedCount + 29;
-      const rejectedDonors = rejectedCount + 3;
-      const successfulMatches = completedCount;
-      const livesAssisted = (completedCount * 3) + 87;
-
       setStats({
-        totalDonors,
-        availableDonors,
-        totalRequests,
-        matchRatio,
-        todayRequests,
-        notificationsSent,
-        acceptedDonors,
-        rejectedDonors,
-        avgResponseTime: '2.1 min',
-        aiConfidence: '98.5%',
-        successfulMatches,
-        livesAssisted,
+        ...statsRes.data
       });
 
       // Show top 5 recent requests

@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, SAFE_METHODS
 from .models import Donor
 from .serializers import DonorSerializer
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 class DonorViewSet(viewsets.ModelViewSet):
     """
@@ -20,8 +21,9 @@ class DonorViewSet(viewsets.ModelViewSet):
 
     queryset = Donor.objects.none()
     serializer_class = DonorSerializer
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['blood_group', 'city', 'available']
+    search_fields = ['name', 'city']
 
     def get_permissions(self):
         if self.request.method in SAFE_METHODS:

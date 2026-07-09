@@ -490,3 +490,57 @@ def respond_to_notification(request, notification_id):
         trigger_next_notification(req)
         
     return Response({"success": True})
+
+
+from django.db.models import F, Avg
+from ai_intake.models import AIIntakeLog
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def dashboard_stats(request):
+    """
+    Returns aggregated stats for the Coordinator Dashboard.
+    """
+    total_donors = Donor.objects.count()
+    available_donors = Donor.objects.filter(available=True).count()
+    
+    total_requests = BloodRequest.objects.count()
+    today_requests = BloodRequest.objects.filter(created_at__date=timezone.now().date()).count()
+    successful_matches = BloodRequest.objects.filter(status__in=['Completed', 'Accepted']).count()
+    
+    notifications_sent = EmergencyNotification.objects.count()
+    accepted_donors = EmergencyNotification.objects.filter(status='accepted').count()
+    rejected_donors = EmergencyNotification.objects.filter(status='rejected').count()
+    
+    match_ratio = f"{int((successful_matches / total_requests) * 100)}%" if total_requests > 0 else "0%"
+    lives_assisted = successful_matches * 3
+
+    # Average Response Time
+    avg_timedelta = EmergencyNotification.objects.filter(responded_at__isnull=False).aggregate(avg_diff=Avg(F('responded_at') - F('sent_at')))['avg_diff']
+    if avg_timedelta:
+        minutes = avg_timedelta.total_seconds() / 60
+        avg_response_time = f"{round(minutes, 1)} min"
+    else:
+        avg_response_time = "-"
+
+    # AI Confidence
+    avg_conf = AIIntakeLog.objects.filter(confidence_score__isnull=False).aggregate(avg_conf=Avg('confidence_score'))['avg_conf']
+    if avg_conf is not None:
+        ai_confidence = f"{round(avg_conf * 100, 1)}%"
+    else:
+        ai_confidence = "-"
+
+    return Response({
+        "totalDonors": total_donors,
+        "availableDonors": available_donors,
+        "totalRequests": total_requests,
+        "matchRatio": match_ratio,
+        "todayRequests": today_requests,
+        "notificationsSent": notifications_sent,
+        "acceptedDonors": accepted_donors,
+        "rejectedDonors": rejected_donors,
+        "successfulMatches": successful_matches,
+        "livesAssisted": lives_assisted,
+        "avgResponseTime": avg_response_time,
+        "aiConfidence": ai_confidence
+    })

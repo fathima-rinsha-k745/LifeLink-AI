@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Activity, Check, MapPin, Calendar, User, Award, ShieldAlert, MessageSquare, LogOut, Heart, Clock, Menu, X, Mic } from 'lucide-react';
+import { Activity, Check, MapPin, Calendar, User, Award, ShieldAlert, MessageSquare, LogOut, Heart, Clock, Menu, X, Mic, Phone } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';

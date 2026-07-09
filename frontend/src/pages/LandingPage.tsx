@@ -1,17 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Heart, 
-  UserPlus, 
-  Sparkles, 
-  Activity, 
-  Mic, 
-  Bell, 
-  Check, 
-  Users, 
-  ShieldCheck, 
-  Globe, 
-  MessageSquare 
+import {
+  Heart,
+  UserPlus,
+  Sparkles,
+  Activity,
+  Mic,
+  Bell,
+  Check,
+  Users,
+  ShieldCheck,
+  Globe,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -69,7 +69,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDonor }) => {
   return (
     <div className="w-full flex flex-col space-y-24 py-12 px-4 md:px-8 max-w-7xl mx-auto overflow-hidden">
-      
+
       {/* 1. HERO SECTION */}
       <section className="relative grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full min-h-[calc(100vh-140px)]">
         {/* Background blobs */}
@@ -131,36 +131,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
           className="lg:col-span-5 relative h-[500px] w-full flex items-center justify-center z-10"
         >
           {/* Main Visual Centerpiece: Pulse Rings and Logo */}
-          <div className="relative w-64 h-64 flex items-center justify-center">
+          <div className="relative w-52 h-52 flex items-center justify-center">
             {/* Heart pulsing rings */}
             <div className="absolute inset-0 border border-brand-primary/10 rounded-full animate-ping" style={{ animationDuration: '4s' }} />
-            <div className="absolute -inset-8 border border-brand-secondary/10 rounded-full animate-ping" style={{ animationDuration: '5s' }} />
-            <div className="absolute -inset-16 border border-brand-accent/10 rounded-full animate-ping" style={{ animationDuration: '6s' }} />
+            <div className="absolute -inset-6 border border-brand-secondary/10 rounded-full animate-ping" style={{ animationDuration: '5s' }} />
+            <div className="absolute -inset-12 border border-brand-accent/10 rounded-full animate-ping" style={{ animationDuration: '6s' }} />
 
             {/* Central pulsing core */}
             <motion.div
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-              className="w-48 h-48 rounded-full bg-gradient-to-tr from-brand-primary via-brand-secondary to-brand-accent/50 flex items-center justify-center p-0.5 shadow-premium shadow-brand-primary/30"
+              className="w-36 h-36 rounded-full bg-gradient-to-tr from-brand-primary via-brand-secondary to-brand-accent/50 flex items-center justify-center p-0.5 shadow-premium shadow-brand-primary/30"
             >
-              <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center p-6 text-center">
-                <Heart className="w-12 h-12 text-brand-primary fill-brand-primary mb-1 animate-pulse" />
-                <h3 className="font-extrabold text-lg text-brand-text-primary leading-none">LifeLink AI</h3>
-                <span className="text-[10px] text-brand-text-secondary mt-1 font-semibold uppercase tracking-wider">AI Emergency Matching Engine</span>
+              <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center p-3 text-center">
+                <Heart className="w-8 h-8 text-brand-primary fill-brand-primary mb-1 animate-pulse" />
+                <h3 className="font-extrabold text-sm text-brand-text-primary leading-none">LifeLink AI</h3>
+                <span className="text-[8px] text-brand-text-secondary mt-1 font-semibold uppercase tracking-wider">AI Engine</span>
               </div>
             </motion.div>
           </div>
 
           {/* Floating Card 1: Voice & Text Requests */}
           <motion.div
-            animate={{ y: [0, -12, 0] }}
+            animate={{ y: [0, -8, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-4 left-6"
+            className="absolute top-4 left-0 lg:left-4"
           >
             <Card glass className="!p-3.5 flex items-center gap-2.5 shadow-lg border-brand-border/60">
-              <div className="w-9 h-9 rounded-xl bg-rose-50 flex items-center justify-center text-base">
-                🎤
-              </div>
+              <div className="w-8 h-8 rounded-xl bg-rose-50 flex items-center justify-center text-sm">🎤</div>
               <div className="text-left leading-tight">
                 <p className="text-[10px] text-brand-text-secondary font-semibold uppercase">Channel</p>
                 <p className="text-xs font-bold text-brand-text-primary">Voice & Text Requests</p>
@@ -170,14 +168,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
 
           {/* Floating Card 2: AI Smart Matching */}
           <motion.div
-            animate={{ y: [0, 10, 0] }}
+            animate={{ y: [0, 8, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
-            className="absolute top-16 right-0"
+            className="absolute top-8 right-0 lg:right-2"
           >
             <Card glass className="!p-3.5 flex items-center gap-2.5 shadow-lg border-brand-border/60">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-base">
-                🤖
-              </div>
+              <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-sm">🤖</div>
               <div className="text-left leading-tight">
                 <p className="text-[10px] text-brand-text-secondary font-semibold uppercase">Technology</p>
                 <p className="text-xs font-bold text-brand-text-primary">AI Smart Matching</p>
@@ -187,14 +183,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
 
           {/* Floating Card 3: Nearest Compatible Donor */}
           <motion.div
-            animate={{ x: [0, 8, 0], y: [0, -8, 0] }}
+            animate={{ y: [0, -8, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut', delay: 0.2 }}
-            className="absolute bottom-16 left-0"
+            className="absolute bottom-16 left-0 lg:left-2"
           >
             <Card glass className="!p-3.5 flex items-center gap-2.5 shadow-lg border-brand-border/60">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center text-base">
-                📍
-              </div>
+              <div className="w-8 h-8 rounded-xl bg-purple-50 flex items-center justify-center text-sm">📍</div>
               <div className="text-left leading-tight">
                 <p className="text-[10px] text-brand-text-secondary font-semibold uppercase">Proximity</p>
                 <p className="text-xs font-bold text-brand-text-primary">Nearest Compatible Donor</p>
@@ -206,12 +200,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
           <motion.div
             animate={{ y: [0, -10, 0] }}
             transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
-            className="absolute bottom-10 right-6"
+            className="absolute bottom-6 right-0 lg:right-4"
           >
             <Card glass className="!p-3.5 flex items-center gap-2.5 shadow-lg border-brand-border/60">
-              <div className="w-9 h-9 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center text-base">
-                🔔
-              </div>
+              <div className="w-8 h-8 rounded-xl bg-brand-surface border border-brand-border flex items-center justify-center text-sm">🔔</div>
               <div className="text-left leading-tight">
                 <p className="text-[10px] text-brand-text-secondary font-semibold uppercase">Alerts</p>
                 <p className="text-xs font-bold text-brand-text-primary">Instant Donor Notification</p>
@@ -223,7 +215,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
           <motion.div
             animate={{ scale: [1, 1.04, 1] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[40%] right-[-10px] lg:right-[-20px]"
+            className="absolute top-1/2 -translate-y-1/2 right-0 lg:-right-4"
           >
             <Card glass className="!p-3 border-brand-danger/30 shadow-lg flex items-center gap-2">
               <span className="text-sm">🌍</span>
@@ -233,14 +225,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onBecomeDo
 
           {/* Floating Card 6: Live Donor Availability */}
           <motion.div
-            animate={{ x: [0, -6, 0], y: [0, 6, 0] }}
+            animate={{ y: [0, 6, 0] }}
             transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-            className="absolute top-[50%] left-[-20px]"
+            className="absolute top-[45%] -translate-y-1/2 left-0 lg:-left-4"
           >
             <Card glass className="!p-3.5 flex items-center gap-2.5 shadow-lg border-brand-border/60">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-base">
-                ❤️
-              </div>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-sm">❤️</div>
               <div className="text-left leading-tight">
                 <p className="text-[10px] text-brand-text-secondary font-semibold uppercase">Status</p>
                 <p className="text-xs font-bold text-brand-text-primary">Live Donor Availability</p>
