@@ -313,10 +313,10 @@ coverage html
 ## 📸 Screenshots
 
 ### Swagger API Documentation
-![Swagger UI](docs/images/swagger-ui.png)
+https://github.com/fathima-rinsha-k745/LifeLink-AI/blob/main/docs/images/swagger-ui.png
 
 ### MkDocs Documentation Site
-![MkDocs Overview](docs/images/mkdocs-overview.png)
+[![Mk documentation](docs/images/mkdocs-overview.png)](https://github.com/fathima-rinsha-k745/LifeLink-AI/blob/main/docs/images/mkdocs-overview.png)
 
 ### Test Coverage Report
 ![coverage report](docs/images/coverage_report.png)
