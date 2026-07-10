@@ -316,7 +316,7 @@ coverage html
 ![Swagger UI](docs/images/swagger_ui.png)
 
 ### MkDocs Documentation Site
-![MkDocs Overview](docs/images/mkdocs-overview.png)
+![MkDocs Overview](docs/images/Mkdocs.png)
 
 ### Test Coverage Report
 ![coverage report](docs/images/coverage_report.png)
