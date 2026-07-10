@@ -410,12 +410,15 @@ class TestAIChatView:
         mock_model = MagicMock()
         mock_model.generate_content.side_effect = Exception("ResourceExhausted: 429 Rate limit exceeded")
         mock_model_class.return_value = mock_model
-
-        response = api_client.post(
-            "/api/ai-chat/",
-            {"message": "Blood query", "role": "requester"},
-            format="json"
-        )
-        # Should gracefully fall back to general chat instead of crashing with 500
-        assert response.status_code == 200
-        assert response.json()["success"] is True
+    
+        with patch("ai_intake.services.run_ai_chat") as mock_run_chat:
+            mock_run_chat.return_value = ("General fallback response", False, "", None)
+            response = api_client.post(
+                "/api/ai-chat/",
+                {"message": "Blood query", "role": "requester"},
+                format="json"
+            )
+            # Should gracefully fall back to general chat instead of crashing with 500
+            assert response.status_code == 200
+            assert response.json()["success"] is True
+            assert response.json()["response"] == "General fallback response"
