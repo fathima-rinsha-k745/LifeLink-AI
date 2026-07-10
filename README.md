@@ -313,7 +313,7 @@ coverage html
 ## 📸 Screenshots
 
 ### Swagger API Documentation
-![Swagger UI](docs/images/swagger-ui.png)
+![Swagger UI](docs/images/swagger_ui.png)
 
 ### MkDocs Documentation Site
 ![MkDocs Overview](docs/images/mkdocs-overview.png)
